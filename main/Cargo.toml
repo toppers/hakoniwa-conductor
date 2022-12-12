@@ -13,3 +13,7 @@ link-cplusplus = { version = "1.0", features = ["libc++"] }
 
 [build-dependencies]
 cc = "1"
+
+[profile.dev]
+opt-level = 0
+debug = true
