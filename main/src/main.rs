@@ -1,10 +1,16 @@
+extern crate link_cplusplus;
+
 #[macro_use]
 extern crate chan;
 extern crate chan_signal;
-
 use std::env;
 use chan_signal::Signal;
 
+#[link(name="spdlog", kind="static")]
+#[link(name="shakoc", kind="static")]
+extern {
+    fn hako_master_init() -> bool;
+}
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -29,6 +35,9 @@ fn main() {
 
     println!("delta_msec = {}", delta_msec);
     println!("max_delay_msec = {}", max_delay_msec);
+    unsafe {
+        hako_master_init();
+    }
 
     let s = chan_signal::notify(&[Signal::INT, Signal::TERM]);
     loop {
