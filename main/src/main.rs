@@ -1,6 +1,6 @@
-//extern crate link_cplusplus;
+extern crate link_cplusplus;
 //extern crate libc;
-use std::os::raw::c_longlong;
+use libc::c_long;
 
 #[macro_use]
 extern crate chan;
@@ -8,14 +8,16 @@ extern crate chan_signal;
 use chan_signal::Signal;
 use std::env;
 
-//#[link(name = "fmt", kind = "static")]
-#[link(name = "spdlog", kind = "dylib")]
-#[link(name = "stdc++", kind = "dylib")]
-#[link(name = "shakoc", kind = "static")]
+//[link(name = "fmt", kind = "static")]
+//#[link(name = "spdlog", kind = "dylib")]
+//[link(name = "spdlog", kind = "static")]
+//#[link(name = "stdc++", kind = "dylib")]
+//#[link(name = "shakoc", kind = "static")]
+#[link(name = "shakoc")]
 extern "C" {
     fn hako_master_init() -> bool;
     fn hako_master_execute() -> bool;
-    fn hako_master_set_config_simtime(max_delay_time_usec: c_longlong, delta_time_usec: c_longlong);
+    fn hako_master_set_config_simtime(max_delay_time_usec: c_long, delta_time_usec: c_long);
     //fn hako_master_get_max_deltay_time_usec() -> i64;
     //fn hako_master_get_delta_time_usec() -> i64;
 }
@@ -46,9 +48,9 @@ fn main() {
     let delta_usec = delta_msec * 1000;
     let max_delay_usec = max_delay_msec * 1000;
     unsafe {
+        let arg1 :c_long = delta_usec;
+        let arg2: c_long = max_delay_usec;
         hako_master_init();
-        let arg1 :c_longlong = delta_usec;
-        let arg2: c_longlong = max_delay_usec;
         hako_master_set_config_simtime(arg1, arg2);
     }
 
