@@ -1,9 +1,9 @@
 use tonic::{ Request, Response, Status};
-use futures_core::Stream;
-use std::pin::Pin;
+//use futures_core::Stream;
+//use std::pin::Pin;
 //use std::sync::Arc;
-//use tokio::sync::mpsc;
-//use tokio_stream::wrappers::ReceiverStream;
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
 
 pub mod hakoniwa {
     tonic::include_proto!("hakoniwa");
@@ -13,7 +13,8 @@ use hakoniwa::{
     ErrorCode, AssetInfo, NormalReply,
     AssetInfoList, SimStatReply, SimulationStatus,
     SimulationTimeSyncOutputFile,
-    AssetNotification, AssetNotificationReply
+    AssetNotification, AssetNotificationReply,
+    AssetNotificationEvent
 };
 
 #[derive(Debug, Default)]
@@ -138,7 +139,8 @@ impl CoreService for HakoCoreService {
         //TODO
         Ok(Response::new(reply))
     }
-    type AssetNotificationStartStream = Pin<Box<dyn Stream<Item = Result<AssetNotification, Status>> + Send  + 'static>>;
+    //type AssetNotificationStartStream = Pin<Box<dyn Stream<Item = Result<AssetNotification, Status>> + Send  + 'static>>;
+    type AssetNotificationStartStream = ReceiverStream<Result<AssetNotification, Status>>;
     /// 箱庭アセット非同期通知
     async fn asset_notification_start(
         &self,
@@ -146,8 +148,19 @@ impl CoreService for HakoCoreService {
     ) -> Result<Response<Self::AssetNotificationStartStream>, Status>
     {
         println!("asset_notification_start: Got a request: {:?}", request);
+        let (tx, rx) = mpsc::channel::<Result<AssetNotification, Status>>(4);
 
-        unimplemented!()
+        tokio::spawn(async move {
+            loop {
+                //TODO get event
+                tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+                let ev = hakoniwa::AssetNotification {
+                    event: AssetNotificationEvent::Heartbeat as i32,
+                };
+                tx.send(Ok(ev)).await.unwrap();
+            }
+        });
+        Ok(Response::new(ReceiverStream::new(rx)))
     }
     async fn asset_notification_feedback(
         &self,
