@@ -1,11 +1,12 @@
-extern crate link_cplusplus;
-//extern crate libc;
-
 #[macro_use]
 extern crate chan;
 extern crate chan_signal;
+extern crate link_cplusplus;
 use chan_signal::Signal;
 use std::env;
+
+//internal modules
+pub mod server;
 
 #[link(name = "shakoc")]
 extern "C" {
