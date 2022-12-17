@@ -14,7 +14,8 @@ use hakoniwa::{
     AssetInfoList, SimStatReply, SimulationStatus,
     SimulationTimeSyncOutputFile,
     AssetNotification, AssetNotificationReply,
-    AssetNotificationEvent
+    AssetNotificationEvent,
+    NotifySimtimeRequest, NotifySimtimeReply
 };
 
 #[derive(Debug, Default)]
@@ -171,6 +172,21 @@ impl CoreService for HakoCoreService {
 
         let reply = hakoniwa::NormalReply {
             ercd: ErrorCode::Ok as i32,
+        };
+        //TODO
+        Ok(Response::new(reply))
+    }
+    /// 箱庭シミュレーション時間取得
+    async fn notify_simtime(
+        &self,
+        request: Request<NotifySimtimeRequest>,
+    ) -> Result<Response<NotifySimtimeReply>, Status>
+    {
+        println!("notify_simtime: Got a request: {:?}", request);
+
+        let reply = hakoniwa::NotifySimtimeReply {
+            ercd: ErrorCode::Ok as i32,
+            master_time: 0 as i64
         };
         //TODO
         Ok(Response::new(reply))
