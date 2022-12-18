@@ -173,7 +173,7 @@ impl CoreService for HakoCoreService {
                 let ev = hako::asset_get_event(req.name.clone());
                 match ev {
                     hako::SimulationAssetEventType::None => {
-                        tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+                        tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
                         let ev = hakoniwa::AssetNotification {
                             event: AssetNotificationEvent::Heartbeat as i32,
                         };
@@ -191,7 +191,9 @@ impl CoreService for HakoCoreService {
                         };
                         tx.send(Ok(ev)).await.unwrap();
                     },
-                    _ => todo!(),
+                    _ => {
+                        println!("Invalid event {:?}", ev);
+                    },
                 }
 
             }
@@ -217,6 +219,9 @@ impl CoreService for HakoCoreService {
         }
         else if event == AssetNotificationEvent::End as i32 {
             hako::asset_stop_feedback(asset_info.name, result);
+        }
+        else if event == AssetNotificationEvent::Heartbeat as i32 {
+            //nothing to do
         }
         let reply = hakoniwa::NormalReply {
             ercd: ErrorCode::Ok as i32,

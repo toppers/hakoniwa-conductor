@@ -20,6 +20,7 @@ extern "C" {
     fn hako_asset_reset_feedback(name: *const c_char, is_ok: bool) -> bool;    
 }
 
+#[derive(Debug)]
 pub enum SimulationAssetEventType
 {
     None,
