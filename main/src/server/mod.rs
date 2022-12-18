@@ -92,12 +92,19 @@ impl CoreService for HakoCoreService {
     {
         println!("start_simulation: Got a request: {:?}", request);
 
-        let reply = hakoniwa::NormalReply {
-            ercd: ErrorCode::Ok as i32,
-        };
-        //TODO
-        Ok(Response::new(reply))
-
+        let result = hako::simevent_start();
+        if result {
+            let reply = hakoniwa::NormalReply {
+                ercd: ErrorCode::Ok as i32,
+            };
+            Ok(Response::new(reply))
+        }
+        else {
+            let reply = hakoniwa::NormalReply {
+                ercd: ErrorCode::Inval as i32,
+            };
+            Ok(Response::new(reply))
+        }
     }
     /// シミュレーションを終了する
     async fn stop_simulation(
@@ -107,11 +114,19 @@ impl CoreService for HakoCoreService {
     {
         println!("stop_simulation: Got a request: {:?}", request);
 
-        let reply = hakoniwa::NormalReply {
-            ercd: ErrorCode::Ok as i32,
-        };
-        //TODO
-        Ok(Response::new(reply))   
+        let result = hako::simevent_stop();
+        if result {
+            let reply = hakoniwa::NormalReply {
+                ercd: ErrorCode::Ok as i32,
+            };
+            Ok(Response::new(reply))
+        }
+        else {
+            let reply = hakoniwa::NormalReply {
+                ercd: ErrorCode::Inval as i32,
+            };
+            Ok(Response::new(reply))
+        }
     }
     /// シミュレーション実行状況を取得する
     async fn get_sim_status(
@@ -120,13 +135,45 @@ impl CoreService for HakoCoreService {
     ) -> Result<Response<SimStatReply>, Status>
     {
         println!("reset_simulation: Got a request: {:?}", request);
-
-        let reply = hakoniwa::SimStatReply {
-            ercd: ErrorCode::Ok as i32,
-            status: SimulationStatus::StatusStopped as i32
-        };
-        //TODO
-        Ok(Response::new(reply))
+ 
+        let state = hako::simevent_get_state();
+        match state {
+            hako::SimulationStateType::Runnable => {
+                let reply = hakoniwa::SimStatReply {
+                    ercd: ErrorCode::Ok as i32,
+                    status: SimulationStatus::StatusRunnable as i32,
+                };
+                Ok(Response::new(reply))
+            },
+            hako::SimulationStateType::Running => {
+                let reply = hakoniwa::SimStatReply {
+                    ercd: ErrorCode::Ok as i32,
+                    status: SimulationStatus::StatusRunning as i32,
+                };
+                Ok(Response::new(reply))
+            },
+            hako::SimulationStateType::Stopping => {
+                let reply = hakoniwa::SimStatReply {
+                    ercd: ErrorCode::Ok as i32,
+                    status: SimulationStatus::StatusStopping as i32,
+                };
+                Ok(Response::new(reply))
+            },
+            hako::SimulationStateType::Error => {
+                let reply = hakoniwa::SimStatReply {
+                    ercd: ErrorCode::Ok as i32,
+                    status: SimulationStatus::StatusTerminated as i32,
+                };
+                Ok(Response::new(reply))
+            },
+            _ => {
+                let reply = hakoniwa::SimStatReply {
+                    ercd: ErrorCode::Ok as i32,
+                    status: SimulationStatus::StatusStopped as i32,
+                };
+                Ok(Response::new(reply))
+            },
+        }
     }
     /// シミュレーションを実行開始状態に戻す
     async fn reset_simulation(
@@ -136,11 +183,19 @@ impl CoreService for HakoCoreService {
     {
         println!("reset_simulation: Got a request: {:?}", request);
 
-        let reply = hakoniwa::NormalReply {
-            ercd: ErrorCode::Ok as i32,
-        };
-        //TODO
-        Ok(Response::new(reply))
+        let result = hako::simevent_start();
+        if result {
+            let reply = hakoniwa::NormalReply {
+                ercd: ErrorCode::Ok as i32,
+            };
+            Ok(Response::new(reply))
+        }
+        else {
+            let reply = hakoniwa::NormalReply {
+                ercd: ErrorCode::Inval as i32,
+            };
+            Ok(Response::new(reply))
+        }
     }
     /// シミュレーション時間同期度合いを取得する
     async fn flush_simulation_time_sync_info(
