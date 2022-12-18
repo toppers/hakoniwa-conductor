@@ -11,6 +11,7 @@ extern "C" {
 
     fn hako_asset_init() -> bool;
     fn hako_asset_register_polling(name: *const c_char) -> bool;
+    fn hako_asset_unregister(name: *const c_char) -> bool;
 }
 
 pub fn master_init(max_delay_time_usec: i64, delta_time_usec: i64)
@@ -41,5 +42,15 @@ pub fn asset_register_polling(name: String) -> bool
     let c_string_ptr: *const c_char = c_string.as_ptr();
     unsafe {
         hako_asset_register_polling(c_string_ptr)
+    }
+}
+
+
+pub fn asset_unregister(name: String) -> bool
+{
+    let c_string: CString = CString::new(name).unwrap();
+    let c_string_ptr: *const c_char = c_string.as_ptr();
+    unsafe {
+        hako_asset_unregister(c_string_ptr)
     }
 }

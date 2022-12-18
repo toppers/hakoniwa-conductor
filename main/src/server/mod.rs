@@ -51,11 +51,20 @@ impl CoreService for HakoCoreService {
     {
         println!("unregister: Got a request: {:?}", request);
 
-        let reply = hakoniwa::NormalReply {
-            ercd: ErrorCode::Ok as i32,
-        };
-        //TODO
-        Ok(Response::new(reply))   
+        let req = request.into_inner();
+        let result = hako::asset_unregister(req.name);
+        if result {
+            let reply = hakoniwa::NormalReply {
+                ercd: ErrorCode::Ok as i32,
+            };
+            Ok(Response::new(reply))
+        }
+        else {
+            let reply = hakoniwa::NormalReply {
+                ercd: ErrorCode::Inval as i32,
+            };
+            Ok(Response::new(reply))
+        }
     }
     async fn get_asset_list(
         &self,
