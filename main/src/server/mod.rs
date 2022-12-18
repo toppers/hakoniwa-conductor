@@ -5,6 +5,8 @@ use tokio_stream::wrappers::ReceiverStream;
 pub mod hakoniwa {
     tonic::include_proto!("hakoniwa");
 }
+use crate::hako;
+
 use hakoniwa::{
     core_service_server:: { CoreService, CoreServiceServer },
     ErrorCode, AssetInfo, NormalReply,
@@ -26,12 +28,20 @@ impl CoreService for HakoCoreService {
     ) -> Result<Response<NormalReply>, Status>
     {
         println!("register: Got a request: {:?}", request);
-
-        let reply = hakoniwa::NormalReply {
-            ercd: ErrorCode::Ok as i32,
-        };
-        //TODO
-        Ok(Response::new(reply))
+        let req = request.into_inner();
+        let result = hako::asset_register_polling(req.name);
+        if result {
+            let reply = hakoniwa::NormalReply {
+                ercd: ErrorCode::Ok as i32,
+            };
+            Ok(Response::new(reply))
+        }
+        else {
+            let reply = hakoniwa::NormalReply {
+                ercd: ErrorCode::Exist as i32,
+            };
+            Ok(Response::new(reply))
+        }
     }
 
     async fn unregister(
@@ -196,6 +206,8 @@ pub async fn start_service() -> Result<(), Box<dyn std::error::Error>>
     println!("hello world");
     let addr = "[::1]:50051".parse().unwrap();
     let service = HakoCoreService::default();
+
+    hako::asset_init();
 
     println!("Server Start: {:?}", addr);
     Server::builder()
