@@ -1,7 +1,4 @@
-use tonic::{ Request, Response, Status};
-//use futures_core::Stream;
-//use std::pin::Pin;
-//use std::sync::Arc;
+use tonic::{ transport::Server, Request, Response, Status};
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 
@@ -9,7 +6,7 @@ pub mod hakoniwa {
     tonic::include_proto!("hakoniwa");
 }
 use hakoniwa::{
-    core_service_server::CoreService,
+    core_service_server:: { CoreService, CoreServiceServer },
     ErrorCode, AssetInfo, NormalReply,
     AssetInfoList, SimStatReply, SimulationStatus,
     SimulationTimeSyncOutputFile,
@@ -192,4 +189,24 @@ impl CoreService for HakoCoreService {
         Ok(Response::new(reply))
     }
 
+}
+
+pub async fn start_service() -> Result<(), Box<dyn std::error::Error>>
+{
+    println!("hello world");
+    let addr = "[::1]:50051".parse().unwrap();
+    let service = HakoCoreService::default();
+
+    println!("Server Start: {:?}", addr);
+    Server::builder()
+    .add_service(CoreServiceServer::new(service))
+    .serve(addr)
+    .await?;
+
+    Ok(())
+}
+
+pub fn stop_service()
+{
+    //TODO
 }
