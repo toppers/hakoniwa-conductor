@@ -15,6 +15,9 @@ extern "C" {
     fn hako_asset_notify_simtime(name: *const c_char, simtime: i64);
     fn hako_asset_get_worldtime() -> i64;
     fn hako_asset_get_event(name: *const c_char) -> i32;
+    fn hako_asset_start_feedback(name: *const c_char, is_ok: bool) -> bool;
+    fn hako_asset_stop_feedback(name: *const c_char, is_ok: bool) -> bool;
+    fn hako_asset_reset_feedback(name: *const c_char, is_ok: bool) -> bool;    
 }
 
 pub enum SimulationAssetEventType
@@ -96,5 +99,29 @@ pub fn asset_get_event(name: String) -> SimulationAssetEventType
             4 => SimulationAssetEventType::Error,
             _ => SimulationAssetEventType::Invalid,
         }
+    }
+}
+pub fn asset_start_feedback(name: String, is_ok: bool) -> bool
+{
+    let c_string: CString = CString::new(name).unwrap();
+    let c_string_ptr: *const c_char = c_string.as_ptr();
+    unsafe {
+        hako_asset_start_feedback(c_string_ptr, is_ok)
+    }
+}
+pub fn asset_stop_feedback(name: String, is_ok: bool) -> bool
+{
+    let c_string: CString = CString::new(name).unwrap();
+    let c_string_ptr: *const c_char = c_string.as_ptr();
+    unsafe {
+        hako_asset_stop_feedback(c_string_ptr, is_ok)
+    }
+}
+pub fn asset_reset_feedback(name: String, is_ok: bool) -> bool
+{
+    let c_string: CString = CString::new(name).unwrap();
+    let c_string_ptr: *const c_char = c_string.as_ptr();
+    unsafe {
+        hako_asset_reset_feedback(c_string_ptr, is_ok)
     }
 }

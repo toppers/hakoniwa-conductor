@@ -204,11 +204,23 @@ impl CoreService for HakoCoreService {
     ) -> Result<tonic::Response<NormalReply>, tonic::Status>
     {
         println!("asset_notification_feedback: Got a request: {:?}", request);
-
+        let req = request.into_inner();
+        let asset_info = req.asset.unwrap();
+        let ercd = req.ercd;
+        let event = req.event;
+        let mut result = true;
+        if ercd != ErrorCode::Ok as i32 {
+            result = false;
+        }
+        if event == AssetNotificationEvent::Start as i32 {
+            hako::asset_start_feedback(asset_info.name, result);
+        }
+        else if event == AssetNotificationEvent::End as i32 {
+            hako::asset_stop_feedback(asset_info.name, result);
+        }
         let reply = hakoniwa::NormalReply {
             ercd: ErrorCode::Ok as i32,
         };
-        //TODO
         Ok(Response::new(reply))
     }
     /// 箱庭シミュレーション時間取得
