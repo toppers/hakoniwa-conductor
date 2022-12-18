@@ -14,6 +14,17 @@ extern "C" {
     fn hako_asset_unregister(name: *const c_char) -> bool;
     fn hako_asset_notify_simtime(name: *const c_char, simtime: i64);
     fn hako_asset_get_worldtime() -> i64;
+    fn hako_asset_get_event(name: *const c_char) -> i32;
+}
+
+pub enum SimulationAssetEventType
+{
+    None,
+    Start,
+    Stop,
+    Reset,
+    Error,
+    Invalid
 }
 
 pub fn master_init(max_delay_time_usec: i64, delta_time_usec: i64)
@@ -69,5 +80,21 @@ pub fn asset_get_worldtime() -> i64
 {
     unsafe {
         hako_asset_get_worldtime()
+    }
+}
+pub fn asset_get_event(name: String) -> SimulationAssetEventType
+{
+    let c_string: CString = CString::new(name).unwrap();
+    let c_string_ptr: *const c_char = c_string.as_ptr();
+    unsafe {
+        let ev: i32 = hako_asset_get_event(c_string_ptr);
+        match ev {
+            0 => SimulationAssetEventType::None,
+            1 => SimulationAssetEventType::Start,
+            2 => SimulationAssetEventType::Stop,
+            3 => SimulationAssetEventType::Reset,
+            4 => SimulationAssetEventType::Error,
+            _ => SimulationAssetEventType::Invalid,
+        }
     }
 }

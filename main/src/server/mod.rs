@@ -14,7 +14,7 @@ use hakoniwa::{
     SimulationTimeSyncOutputFile,
     AssetNotification, AssetNotificationReply,
     AssetNotificationEvent,
-    NotifySimtimeRequest, NotifySimtimeReply
+    NotifySimtimeRequest, NotifySimtimeReply,
 };
 
 #[derive(Debug, Default)]
@@ -166,15 +166,34 @@ impl CoreService for HakoCoreService {
     {
         println!("asset_notification_start: Got a request: {:?}", request);
         let (tx, rx) = mpsc::channel::<Result<AssetNotification, Status>>(4);
+        let req = request.into_inner();
 
         tokio::spawn(async move {
             loop {
-                //TODO get event
-                tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-                let ev = hakoniwa::AssetNotification {
-                    event: AssetNotificationEvent::Heartbeat as i32,
-                };
-                tx.send(Ok(ev)).await.unwrap();
+                let ev = hako::asset_get_event(req.name.clone());
+                match ev {
+                    hako::SimulationAssetEventType::None => {
+                        tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+                        let ev = hakoniwa::AssetNotification {
+                            event: AssetNotificationEvent::Heartbeat as i32,
+                        };
+                        tx.send(Ok(ev)).await.unwrap();
+                    },
+                    hako::SimulationAssetEventType::Start => {
+                        let ev = hakoniwa::AssetNotification {
+                            event: AssetNotificationEvent::Start as i32,
+                        };
+                        tx.send(Ok(ev)).await.unwrap();
+                    },
+                    hako::SimulationAssetEventType::Stop => {
+                        let ev = hakoniwa::AssetNotification {
+                            event: AssetNotificationEvent::End as i32,
+                        };
+                        tx.send(Ok(ev)).await.unwrap();
+                    },
+                    _ => todo!(),
+                }
+
             }
         });
         Ok(Response::new(ReceiverStream::new(rx)))
