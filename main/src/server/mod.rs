@@ -200,11 +200,15 @@ impl CoreService for HakoCoreService {
     {
         println!("notify_simtime: Got a request: {:?}", request);
 
+        let req = request.into_inner();
+        let asset_info = req.asset.unwrap();
+        hako::asset_notify_simtime(asset_info.name, req.asset_time);
+        let master_time: i64 = hako::asset_get_worldtime();
+        //println!("master_time={}", master_time);
         let reply = hakoniwa::NotifySimtimeReply {
             ercd: ErrorCode::Ok as i32,
-            master_time: 0 as i64
+            master_time: master_time as i64
         };
-        //TODO
         Ok(Response::new(reply))
     }
 
