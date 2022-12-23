@@ -24,6 +24,17 @@ extern "C" {
     fn hako_asset_start_feedback(name: *const c_char, is_ok: bool) -> bool;
     fn hako_asset_stop_feedback(name: *const c_char, is_ok: bool) -> bool;
     fn hako_asset_reset_feedback(name: *const c_char, is_ok: bool) -> bool;
+    // pdu apis
+    fn hako_asset_create_pdu_channel(channel_id: i32, pdu_size: i32) -> bool;
+    fn hako_asset_is_pdu_dirty(asset_name: *const c_char, channel_id: i32) -> bool;
+    fn hako_asset_write_pdu(asset_name: *const c_char, channel_id: i32, pdu_data: *const c_char, len: i32) -> bool;
+    fn hako_asset_read_pdu(asset_name: *const c_char, channel_id: i32, pdu_data: *mut c_char, len: i32) -> bool;
+    fn hako_asset_notify_read_pdu_done(asset_name: *const c_char) -> bool;
+    fn hako_asset_notify_write_pdu_done(asset_name: *const c_char) -> bool;
+    fn hako_asset_is_pdu_sync_mode(asset_name: *const c_char) -> bool;
+    fn hako_asset_is_simulation_mode() -> bool;
+    fn hako_asset_is_pdu_created() -> bool;
+
     /*
      * Simulation API
      */
@@ -183,5 +194,67 @@ pub fn simevent_reset() -> bool
 {
     unsafe {
         hako_simevent_reset()
+    }
+}
+// pdu apis
+pub fn asset_create_pdu_channel(channel_id: i32, pdu_size: i32) -> bool
+{
+    unsafe {
+        hako_asset_create_pdu_channel(channel_id, pdu_size)
+    }
+}
+pub fn asset_is_pdu_dirty(asset_name: *const c_char, channel_id: i32) -> bool
+{
+    unsafe {
+        hako_asset_is_pdu_dirty(asset_name, channel_id)
+    }
+}
+
+pub fn asset_write_pdu(asset_name: *const c_char, channel_id: i32, pdu_data: *const c_char, len: i32) -> bool
+{
+    unsafe {
+        hako_asset_write_pdu(asset_name, channel_id, pdu_data, len)
+    }
+}
+
+pub fn asset_read_pdu(asset_name: *const c_char, channel_id: i32, pdu_data: *mut c_char, len: i32) -> bool
+{
+    unsafe {
+        hako_asset_read_pdu(asset_name, channel_id, pdu_data, len)
+    }
+}
+
+pub fn asset_notify_read_pdu_done(asset_name: *const c_char) -> bool
+{
+    unsafe {
+        hako_asset_notify_read_pdu_done(asset_name)
+    }
+}
+
+pub fn asset_notify_write_pdu_done(asset_name: *const c_char) -> bool
+{
+    unsafe {
+        hako_asset_notify_write_pdu_done(asset_name)        
+    }
+}
+
+pub fn asset_is_pdu_sync_mode(asset_name: *const c_char) -> bool
+{
+    unsafe {
+        hako_asset_is_pdu_sync_mode(asset_name)        
+    }
+}
+
+pub fn asset_is_simulation_mode() -> bool
+{
+    unsafe {
+        hako_asset_is_simulation_mode()        
+    }
+}
+
+pub fn asset_is_pdu_created() -> bool
+{
+    unsafe {
+        hako_asset_is_pdu_created()        
     }
 }

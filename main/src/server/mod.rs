@@ -15,6 +15,7 @@ use hakoniwa::{
     AssetNotification, AssetNotificationReply,
     AssetNotificationEvent,
     NotifySimtimeRequest, NotifySimtimeReply,
+    CreatePduChannelRequest, CreatePduChannelReply
 };
 
 #[derive(Debug, Default)]
@@ -301,6 +302,31 @@ impl CoreService for HakoCoreService {
             master_time: master_time as i64
         };
         Ok(Response::new(reply))
+    }
+    /// 箱庭PDUチャネル作成
+    async fn create_pdu_channel(
+        &self,
+        request: Request<CreatePduChannelRequest>,
+    ) -> Result<Response<CreatePduChannelReply>, Status> {
+        println!("notify_simtime: Got a request: {:?}", request);
+
+        let req = request.into_inner();
+        //TODO asset_udp_port
+        let result = hako::asset_create_pdu_channel(req.channel_id, req.pdu_size);
+        if result {
+            let reply = hakoniwa::CreatePduChannelReply {
+                ercd: ErrorCode::Ok as i32,
+                master_udp_port: 0 as i32 //TODO
+            };
+            Ok(Response::new(reply))
+        }
+        else {
+            let reply = hakoniwa::CreatePduChannelReply {
+                ercd: ErrorCode::Inval as i32,
+                master_udp_port: 0 as i32
+            };
+            Ok(Response::new(reply))
+        }
     }
 
 }
