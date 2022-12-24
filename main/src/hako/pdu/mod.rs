@@ -32,8 +32,9 @@ static mut PDU_SERVER_PORT: i32 = -1;
 pub fn activate_server(ip_port: &String)
 {
     let v: Vec<&str> = ip_port.split(':').collect();
+    println!("OPEN RECIEVER UDP PORT={}", ip_port);
     unsafe {
-        PDU_SERVER_PORT = String::from(v[0]).parse::<i32>().unwrap();
+        PDU_SERVER_PORT = String::from(v[1]).parse::<i32>().unwrap();
     }
     let socket = UdpSocket::bind(ip_port).unwrap();
     std::thread::spawn(move || {
@@ -78,6 +79,7 @@ pub fn get_subscribers(v: &mut Vec<i32>)
 
 pub fn create_publisher_udp_socket(udp_ip_port: &String) -> UdpSocket
 {
+    println!("OPEN SENDER UDP PORT={}", udp_ip_port);
     let socket = UdpSocket::bind(udp_ip_port).unwrap();
     socket
 }
