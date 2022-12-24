@@ -11,8 +11,8 @@ pub mod server;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
-    if args.len() != 3 {
-        println!("Usage: {} <delta_msec> <max_delay_msec>", args[0]);
+    if args.len() != 3 && args.len() != 4 {
+        println!("Usage: {} <delta_msec> <max_delay_msec> [<udp_server_port>]", args[0]);
         std::process::exit(1);
     }
     let delta_msec: i64 = match args[1].parse::<i64>() {
@@ -29,6 +29,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             std::process::exit(1);
         }
     };
+    if args.len() == 4 {
+        hako::pdu::set_server_port(args[3].parse::<i32>().unwrap());
+    }
 
     println!("delta_msec = {}", delta_msec);
     println!("max_delay_msec = {}", max_delay_msec);

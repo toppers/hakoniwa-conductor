@@ -2,6 +2,7 @@ extern crate link_cplusplus;
 
 use libc::c_char;
 use std::ffi::CString;
+pub mod pdu;
 
 #[link(name = "shakoc")]
 extern "C" {
@@ -199,8 +200,19 @@ pub fn simevent_reset() -> bool
 // pdu apis
 pub fn asset_create_pdu_channel(channel_id: i32, pdu_size: i32) -> bool
 {
+    let result = pdu::create_asset_pub_pdu(channel_id, pdu_size);
+    if result == false {
+        return false;
+    }
     unsafe {
-        hako_asset_create_pdu_channel(channel_id, pdu_size)
+        let result = hako_asset_create_pdu_channel(channel_id, pdu_size);
+        if result == false {
+            pdu::remove_asset_pub_pdu(channel_id);
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 }
 pub fn asset_is_pdu_dirty(asset_name: *const c_char, channel_id: i32) -> bool

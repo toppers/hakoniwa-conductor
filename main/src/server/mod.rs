@@ -15,7 +15,8 @@ use hakoniwa::{
     AssetNotification, AssetNotificationReply,
     AssetNotificationEvent,
     NotifySimtimeRequest, NotifySimtimeReply,
-    CreatePduChannelRequest, CreatePduChannelReply
+    CreatePduChannelRequest, CreatePduChannelReply,
+    SubscribePduChannelRequest, SubscribePduChannelReply
 };
 
 #[derive(Debug, Default)]
@@ -311,24 +312,44 @@ impl CoreService for HakoCoreService {
         println!("notify_simtime: Got a request: {:?}", request);
 
         let req = request.into_inner();
-        //TODO asset_udp_port
         let result = hako::asset_create_pdu_channel(req.channel_id, req.pdu_size);
         if result {
             let reply = hakoniwa::CreatePduChannelReply {
                 ercd: ErrorCode::Ok as i32,
-                master_udp_port: 0 as i32 //TODO
+                master_udp_port: hako::pdu::get_server_port() as i32
             };
             Ok(Response::new(reply))
         }
         else {
             let reply = hakoniwa::CreatePduChannelReply {
                 ercd: ErrorCode::Inval as i32,
-                master_udp_port: 0 as i32
+                master_udp_port: -1 as i32
             };
             Ok(Response::new(reply))
         }
     }
+    /// 箱庭PDUチャネル購読
+    async fn subscribe_pdu_channel(
+        &self,
+        request: Request<SubscribePduChannelRequest>,
+    ) -> Result<Response<SubscribePduChannelReply>, Status> {
+        println!("notify_simtime: Got a request: {:?}", request);
 
+        let req = request.into_inner();
+        let result = hako::pdu::create_asset_sub_pdu(req.channel_id, req.pdu_size, req.listen_udp_port);
+        if result {
+            let reply = hakoniwa::SubscribePduChannelReply {
+                ercd: ErrorCode::Ok as i32
+            };
+            Ok(Response::new(reply))
+        }
+        else {
+            let reply = hakoniwa::SubscribePduChannelReply {
+                ercd: ErrorCode::Inval as i32
+            };
+            Ok(Response::new(reply))
+        }
+    }
 }
 
 pub async fn start_service() -> Result<(), Box<dyn std::error::Error>>
