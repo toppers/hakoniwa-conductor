@@ -1,5 +1,3 @@
-use std::net::UdpSocket;
-
 pub mod pdu;
 pub mod api;
 

@@ -54,7 +54,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     if hako::api::master_execute() {
                         match socket {
                             Some(ref _n) => {
-                                //hako::publish_pdus(socket.as_ref().unwrap());
+                                hako::pdu::send_all_subscriber(socket.as_ref().unwrap());
                             },
                             None => ()
                         }

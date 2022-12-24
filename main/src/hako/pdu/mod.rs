@@ -4,6 +4,8 @@ use std::{sync::Mutex, collections::HashMap};
 use once_cell::sync::Lazy;
 use std::net::UdpSocket;
 use std::str;
+use crate::hako::api;
+use libc::c_char;
 
 const ASSET_PACKET_MAX_SIZE: usize = 4096;
 struct AssetPubPduType {
@@ -81,11 +83,28 @@ pub fn create_publisher_udp_socket(udp_ip_port: &String) -> UdpSocket
     socket
 }
 
-
-pub fn send_to_subscriber(socket: UdpSocket, channel_id: i32, data: &[u8], size: usize)
+pub fn send_all_subscriber(socket: &UdpSocket)
 {
+    let mut buf: [u8; ASSET_PACKET_MAX_SIZE] = [0; ASSET_PACKET_MAX_SIZE];
     let mut map = ASSET_SUB_PDU_CHANNELS.lock().unwrap();
-    let pdu: &mut AssetSubPduType = map.get_mut(&channel_id).unwrap();
+    for (channel_id, pdu) in map.iter_mut() {
+        
+        let result = api::asset_read_pdu(
+            pdu.asset_name.as_ptr() as *const c_char, 
+            channel_id.clone(), 
+            buf.as_mut_ptr() as *mut c_char, 
+            buf.len() as i32);
+        if result {
+            send_one_subscriber(socket, pdu, channel_id.clone(), &buf, pdu.pdu_size as usize);
+        }
+    }
+}
+
+
+fn send_one_subscriber(socket: &UdpSocket, pdu: &mut AssetSubPduType, channel_id: i32, data: &[u8], size: usize)
+{
+    //let mut map = ASSET_SUB_PDU_CHANNELS.lock().unwrap();
+    //let pdu: &mut AssetSubPduType = map.get_mut(&channel_id).unwrap();
     //0..3: channel id
     //4..7: bufsize
     let buf_ch = i32::to_le_bytes(channel_id);
@@ -95,6 +114,9 @@ pub fn send_to_subscriber(socket: UdpSocket, channel_id: i32, data: &[u8], size:
     for i in 0..4 {
         buf[i] = buf_ch[i as usize];
         buf[i + 4] = buf_sz[i as usize];
+    }
+    for i in 0..size {
+        buf[i + 8] = data[i];
     }
 
     socket.send_to(&pdu.buffer, pdu.udp_ip_port.clone()).expect("couldn't send data");
