@@ -2,8 +2,9 @@ extern crate lazy_static;
 extern crate once_cell;
 use std::{sync::Mutex, collections::HashMap};
 use once_cell::sync::Lazy;
+use std::net::UdpSocket;
+use std::str;
 
-static mut PDU_SERVER_PORT: i32 = -1;
 const ASSET_SUB_PDU_MAX_SIZE: usize = 4096;
 struct AssetPubPduType {
     pdu_size: i32,
@@ -22,11 +23,39 @@ static ASSET_PUB_PDU_CHANNELS: Lazy<Mutex<HashMap<i32, AssetPubPduType>>> = Lazy
     Mutex::new(m)
 });
 
-pub fn set_server_port(port: i32)
+static mut PDU_SERVER_PORT: i32 = -1;
+
+pub fn activate_server(ip_port: &String)
 {
+    let v: Vec<&str> = ip_port.split(':').collect();
     unsafe {
-        PDU_SERVER_PORT = port;
+        PDU_SERVER_PORT = String::from(v[0]).parse::<i32>().unwrap();
     }
+    let socket = UdpSocket::bind(ip_port).unwrap();
+    std::thread::spawn(move || {
+        let mut buf = [0; ASSET_SUB_PDU_MAX_SIZE];
+        loop {
+            match socket.recv_from(&mut buf) {
+                Ok((_buf_size, _src_addr)) => {
+                  //0..3: channel id
+                  //4..7: bufsize
+                  let mut buf_ch = [0;4];
+                  let mut buf_sz = [0;4];
+                  for i in 0..4 {
+                    buf_ch[i] = buf[i];
+                    buf_sz[i] = buf[i + 4];
+                  }
+                  let channel_id = i32::from_le_bytes(buf_ch);
+                  let pdu_size = i32::from_le_bytes(buf_sz);
+                  //8..bufsize: buffer
+                  write_asset_pub_pdu(channel_id, &buf[8..], pdu_size as usize);
+                },
+                Err(e) => {
+                  println!("couldn't recieve request: {:?}", e);
+                }
+              }
+        }
+    });
 }
 pub fn get_server_port() -> i32
 {
@@ -111,15 +140,13 @@ pub fn get_asset_pub_pdu_size(channel_id: i32) -> i32
     };
     size
 }
-pub fn write_asset_pub_pdu(channel_id: i32, data: *const u8, size: usize)
+pub fn write_asset_pub_pdu(channel_id: i32, data: &[u8], size: usize)
 {
     let map = ASSET_PUB_PDU_CHANNELS.lock().unwrap();
     let mut buffer = map.get(&channel_id).unwrap().buffer;
     let mut i: usize = 0;
     while i < size {
-        unsafe {
-            buffer[i] = *data.offset(i as isize) as u8;
-        }
+        buffer[i] = data[i];
         i = i + 1;
     }
 }

@@ -12,7 +12,7 @@ pub mod server;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
     if args.len() != 3 && args.len() != 4 {
-        println!("Usage: {} <delta_msec> <max_delay_msec> [<udp_server_port>]", args[0]);
+        println!("Usage: {} <delta_msec> <max_delay_msec> [<ipaddr:udp_server_port>]", args[0]);
         std::process::exit(1);
     }
     let delta_msec: i64 = match args[1].parse::<i64>() {
@@ -30,7 +30,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
     if args.len() == 4 {
-        hako::pdu::set_server_port(args[3].parse::<i32>().unwrap());
+        hako::pdu::activate_server(&args[3]);
     }
 
     println!("delta_msec = {}", delta_msec);
