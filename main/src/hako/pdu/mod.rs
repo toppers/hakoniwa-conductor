@@ -11,7 +11,6 @@ const ASSET_PACKET_MAX_SIZE: usize = 4096;
 struct AssetPubPduType {
     asset_name: String,
     pdu_size: i32,
-    buffer: [u8; ASSET_PACKET_MAX_SIZE]
 }
 struct AssetSubPduType {
     asset_name: String,
@@ -170,7 +169,6 @@ pub fn create_asset_pub_pdu(asset_name: String, channel_id: i32, pdu_size: i32) 
             let pdu = AssetPubPduType {
                 asset_name: asset_name,
                 pdu_size: pdu_size,
-                buffer: [0; ASSET_PACKET_MAX_SIZE ]
             };
             map.insert(channel_id, pdu);
             return true;
@@ -196,10 +194,10 @@ pub fn get_asset_pub_pdu_size(channel_id: i32) -> i32
 pub fn write_asset_pub_pdu(channel_id: i32, data: &[u8], size: usize)
 {
     let map = ASSET_PUB_PDU_CHANNELS.lock().unwrap();
-    let mut buffer = map.get(&channel_id).unwrap().buffer;
-    let mut i: usize = 0;
-    while i < size {
-        buffer[i] = data[i];
-        i = i + 1;
-    }
+    let pdu = map.get(&channel_id).unwrap();
+    api::asset_write_pdu(
+        pdu.asset_name.as_ptr() as *const c_char, 
+        channel_id.clone(), 
+        data.as_ptr() as *const c_char, 
+        size as i32);
 }
