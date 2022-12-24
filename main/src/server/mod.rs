@@ -31,7 +31,7 @@ impl CoreService for HakoCoreService {
     {
         println!("register: Got a request: {:?}", request);
         let req = request.into_inner();
-        let result = hako::asset_register_polling(req.name);
+        let result = hako::api::asset_register_polling(req.name);
         if result {
             let reply = hakoniwa::NormalReply {
                 ercd: ErrorCode::Ok as i32,
@@ -54,7 +54,7 @@ impl CoreService for HakoCoreService {
         println!("unregister: Got a request: {:?}", request);
 
         let req = request.into_inner();
-        let result = hako::asset_unregister(req.name);
+        let result = hako::api::asset_unregister(req.name);
         if result {
             let reply = hakoniwa::NormalReply {
                 ercd: ErrorCode::Ok as i32,
@@ -94,7 +94,7 @@ impl CoreService for HakoCoreService {
     {
         println!("start_simulation: Got a request: {:?}", request);
 
-        let result = hako::simevent_start();
+        let result = hako::api::simevent_start();
         if result {
             let reply = hakoniwa::NormalReply {
                 ercd: ErrorCode::Ok as i32,
@@ -116,7 +116,7 @@ impl CoreService for HakoCoreService {
     {
         println!("stop_simulation: Got a request: {:?}", request);
 
-        let result = hako::simevent_stop();
+        let result = hako::api::simevent_stop();
         if result {
             let reply = hakoniwa::NormalReply {
                 ercd: ErrorCode::Ok as i32,
@@ -138,30 +138,30 @@ impl CoreService for HakoCoreService {
     {
         println!("reset_simulation: Got a request: {:?}", request);
  
-        let state = hako::simevent_get_state();
+        let state = hako::api::simevent_get_state();
         match state {
-            hako::SimulationStateType::Runnable => {
+            hako::api::SimulationStateType::Runnable => {
                 let reply = hakoniwa::SimStatReply {
                     ercd: ErrorCode::Ok as i32,
                     status: SimulationStatus::StatusRunnable as i32,
                 };
                 Ok(Response::new(reply))
             },
-            hako::SimulationStateType::Running => {
+            hako::api::SimulationStateType::Running => {
                 let reply = hakoniwa::SimStatReply {
                     ercd: ErrorCode::Ok as i32,
                     status: SimulationStatus::StatusRunning as i32,
                 };
                 Ok(Response::new(reply))
             },
-            hako::SimulationStateType::Stopping => {
+            hako::api::SimulationStateType::Stopping => {
                 let reply = hakoniwa::SimStatReply {
                     ercd: ErrorCode::Ok as i32,
                     status: SimulationStatus::StatusStopping as i32,
                 };
                 Ok(Response::new(reply))
             },
-            hako::SimulationStateType::Error => {
+            hako::api::SimulationStateType::Error => {
                 let reply = hakoniwa::SimStatReply {
                     ercd: ErrorCode::Ok as i32,
                     status: SimulationStatus::StatusTerminated as i32,
@@ -185,7 +185,7 @@ impl CoreService for HakoCoreService {
     {
         println!("reset_simulation: Got a request: {:?}", request);
 
-        let result = hako::simevent_start();
+        let result = hako::api::simevent_start();
         if result {
             let reply = hakoniwa::NormalReply {
                 ercd: ErrorCode::Ok as i32,
@@ -227,22 +227,22 @@ impl CoreService for HakoCoreService {
 
         tokio::spawn(async move {
             loop {
-                let ev = hako::asset_get_event(req.name.clone());
+                let ev = hako::api::asset_get_event(req.name.clone());
                 match ev {
-                    hako::SimulationAssetEventType::None => {
+                    hako::api::SimulationAssetEventType::None => {
                         tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
                         let ev = hakoniwa::AssetNotification {
                             event: AssetNotificationEvent::Heartbeat as i32,
                         };
                         tx.send(Ok(ev)).await.unwrap();
                     },
-                    hako::SimulationAssetEventType::Start => {
+                    hako::api::SimulationAssetEventType::Start => {
                         let ev = hakoniwa::AssetNotification {
                             event: AssetNotificationEvent::Start as i32,
                         };
                         tx.send(Ok(ev)).await.unwrap();
                     },
-                    hako::SimulationAssetEventType::Stop => {
+                    hako::api::SimulationAssetEventType::Stop => {
                         let ev = hakoniwa::AssetNotification {
                             event: AssetNotificationEvent::End as i32,
                         };
@@ -272,10 +272,10 @@ impl CoreService for HakoCoreService {
             result = false;
         }
         if event == AssetNotificationEvent::Start as i32 {
-            hako::asset_start_feedback(asset_info.name, result);
+            hako::api::asset_start_feedback(asset_info.name, result);
         }
         else if event == AssetNotificationEvent::End as i32 {
-            hako::asset_stop_feedback(asset_info.name, result);
+            hako::api::asset_stop_feedback(asset_info.name, result);
         }
         else if event == AssetNotificationEvent::Heartbeat as i32 {
             //nothing to do
@@ -295,8 +295,8 @@ impl CoreService for HakoCoreService {
 
         let req = request.into_inner();
         let asset_info = req.asset.unwrap();
-        hako::asset_notify_simtime(asset_info.name, req.asset_time);
-        let master_time: i64 = hako::asset_get_worldtime();
+        hako::api::asset_notify_simtime(asset_info.name, req.asset_time);
+        let master_time: i64 = hako::api::asset_get_worldtime();
         //println!("master_time={}", master_time);
         let reply = hakoniwa::NotifySimtimeReply {
             ercd: ErrorCode::Ok as i32,
@@ -312,7 +312,7 @@ impl CoreService for HakoCoreService {
         println!("notify_simtime: Got a request: {:?}", request);
 
         let req = request.into_inner();
-        let result = hako::asset_create_pdu_channel(req.channel_id, req.pdu_size);
+        let result = hako::asset_create_pdu_channel(req.asset_name, req.channel_id, req.pdu_size);
         if result {
             let reply = hakoniwa::CreatePduChannelReply {
                 ercd: ErrorCode::Ok as i32,
@@ -336,7 +336,7 @@ impl CoreService for HakoCoreService {
         println!("notify_simtime: Got a request: {:?}", request);
 
         let req = request.into_inner();
-        let result = hako::pdu::create_asset_sub_pdu(req.channel_id, req.pdu_size, req.listen_udp_port);
+        let result = hako::pdu::create_asset_sub_pdu(req.asset_name, req.channel_id, req.pdu_size, req.listen_udp_ip_port);
         if result {
             let reply = hakoniwa::SubscribePduChannelReply {
                 ercd: ErrorCode::Ok as i32
@@ -358,7 +358,7 @@ pub async fn start_service() -> Result<(), Box<dyn std::error::Error>>
     let addr = "[::1]:50051".parse().unwrap();
     let service = HakoCoreService::default();
 
-    hako::asset_init();
+    hako::api::asset_init();
 
     println!("Server Start: {:?}", addr);
     Server::builder()
