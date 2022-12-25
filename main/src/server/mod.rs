@@ -18,6 +18,27 @@ use hakoniwa::{
     CreatePduChannelRequest, CreatePduChannelReply,
     SubscribePduChannelRequest, SubscribePduChannelReply
 };
+fn get_status() -> SimulationStatus
+{
+    let state = hako::api::simevent_get_state();
+    match state {
+        hako::api::SimulationStateType::Runnable => {
+            return SimulationStatus::StatusRunnable;
+        },
+        hako::api::SimulationStateType::Running => {
+            return SimulationStatus::StatusRunning;
+        },
+        hako::api::SimulationStateType::Stopping => {
+            return SimulationStatus::StatusStopping;
+        },
+        hako::api::SimulationStateType::Error => {
+            return SimulationStatus::StatusTerminated;
+        },
+        _ => {
+            return SimulationStatus::StatusTerminated;
+        },
+    }
+}
 
 #[derive(Debug, Default)]
 pub struct HakoCoreService {}
@@ -138,44 +159,12 @@ impl CoreService for HakoCoreService {
     {
         println!("reset_simulation: Got a request: {:?}", request);
  
-        let state = hako::api::simevent_get_state();
-        match state {
-            hako::api::SimulationStateType::Runnable => {
-                let reply = hakoniwa::SimStatReply {
-                    ercd: ErrorCode::Ok as i32,
-                    status: SimulationStatus::StatusRunnable as i32,
-                };
-                Ok(Response::new(reply))
-            },
-            hako::api::SimulationStateType::Running => {
-                let reply = hakoniwa::SimStatReply {
-                    ercd: ErrorCode::Ok as i32,
-                    status: SimulationStatus::StatusRunning as i32,
-                };
-                Ok(Response::new(reply))
-            },
-            hako::api::SimulationStateType::Stopping => {
-                let reply = hakoniwa::SimStatReply {
-                    ercd: ErrorCode::Ok as i32,
-                    status: SimulationStatus::StatusStopping as i32,
-                };
-                Ok(Response::new(reply))
-            },
-            hako::api::SimulationStateType::Error => {
-                let reply = hakoniwa::SimStatReply {
-                    ercd: ErrorCode::Ok as i32,
-                    status: SimulationStatus::StatusTerminated as i32,
-                };
-                Ok(Response::new(reply))
-            },
-            _ => {
-                let reply = hakoniwa::SimStatReply {
-                    ercd: ErrorCode::Ok as i32,
-                    status: SimulationStatus::StatusStopped as i32,
-                };
-                Ok(Response::new(reply))
-            },
-        }
+        let state = get_status();
+        let reply = hakoniwa::SimStatReply {
+            ercd: ErrorCode::Ok as i32,
+            status: state as i32,
+        };
+        Ok(Response::new(reply))
     }
     /// シミュレーションを実行開始状態に戻す
     async fn reset_simulation(
@@ -310,12 +299,24 @@ impl CoreService for HakoCoreService {
 
         let req = request.into_inner();
         let asset_info = req.asset.unwrap();
-        hako::api::asset_notify_simtime(asset_info.name, req.asset_time);
+        hako::api::asset_notify_simtime(asset_info.name.clone(), req.asset_time);
+
+        if req.is_read_pdu_done {
+            hako::api::asset_notify_read_pdu_done(asset_info.name.as_ptr() as *const i8);
+        }
+        if req.is_write_pdu_done {
+            hako::api::asset_notify_write_pdu_done(asset_info.name.as_ptr() as *const i8);
+        }
+
         let master_time: i64 = hako::api::asset_get_worldtime();
         //println!("master_time={}", master_time);
         let reply = hakoniwa::NotifySimtimeReply {
             ercd: ErrorCode::Ok as i32,
-            master_time: master_time as i64
+            master_time: master_time as i64,
+            is_pdu_created: hako::api::asset_is_pdu_created(),
+            is_pdu_sync_mode: hako::api::asset_is_pdu_sync_mode(asset_info.name.as_ptr() as *const i8),
+            is_simulation_mode: hako::api::asset_is_simulation_mode(),
+            status: get_status() as i32
         };
         Ok(Response::new(reply))
     }
