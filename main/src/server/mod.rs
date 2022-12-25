@@ -244,7 +244,19 @@ impl CoreService for HakoCoreService {
                     },
                     hako::api::SimulationAssetEventType::Stop => {
                         let ev = hakoniwa::AssetNotification {
-                            event: AssetNotificationEvent::End as i32,
+                            event: AssetNotificationEvent::Stop as i32,
+                        };
+                        tx.send(Ok(ev)).await.unwrap();
+                    },
+                    hako::api::SimulationAssetEventType::Reset => {
+                        let ev = hakoniwa::AssetNotification {
+                            event: AssetNotificationEvent::Reset as i32,
+                        };
+                        tx.send(Ok(ev)).await.unwrap();
+                    },
+                    hako::api::SimulationAssetEventType::Error => {
+                        let ev = hakoniwa::AssetNotification {
+                            event: AssetNotificationEvent::Error as i32,
                         };
                         tx.send(Ok(ev)).await.unwrap();
                     },
@@ -274,8 +286,11 @@ impl CoreService for HakoCoreService {
         if event == AssetNotificationEvent::Start as i32 {
             hako::api::asset_start_feedback(asset_info.name, result);
         }
-        else if event == AssetNotificationEvent::End as i32 {
+        else if event == AssetNotificationEvent::Stop as i32 {
             hako::api::asset_stop_feedback(asset_info.name, result);
+        }
+        else if event == AssetNotificationEvent::Reset as i32 {
+            hako::api::asset_reset_feedback(asset_info.name, result);
         }
         else if event == AssetNotificationEvent::Heartbeat as i32 {
             //nothing to do
