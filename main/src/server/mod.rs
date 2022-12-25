@@ -185,7 +185,7 @@ impl CoreService for HakoCoreService {
     {
         println!("reset_simulation: Got a request: {:?}", request);
 
-        let result = hako::api::simevent_start();
+        let result = hako::api::simevent_reset();
         if result {
             let reply = hakoniwa::NormalReply {
                 ercd: ErrorCode::Ok as i32,
