@@ -12,8 +12,8 @@ pub mod server;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
-    if args.len() != 3 && args.len() != 5 {
-        println!("Usage: {} <delta_msec> <max_delay_msec> [<ipaddr:udp_server_port>] [<ipaddr:udp_sender_port>]", args[0]);
+    if args.len() != 4 && args.len() != 6 {
+        println!("Usage: {} <delta_msec> <max_delay_msec> <ipaddr>:<port> [<udp_server_port>] [<udp_sender_port>]", args[0]);
         std::process::exit(1);
     }
     let delta_msec: i64 = match args[1].parse::<i64>() {
@@ -30,10 +30,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             std::process::exit(1);
         }
     };
+    let v: Vec<&str> = args[3].split(':').collect();
+    let ipaddr: String = String::from(v[0]);
     let mut socket: Option<UdpSocket> = None;
-    if args.len() == 5 {
-        hako::pdu::activate_server(&args[3]);
-        socket = Some(hako::pdu::create_publisher_udp_socket(&args[4]));
+    if args.len() == 6 {
+        let udp_server_ip_port: String = ipaddr.clone() + ":" + &args[4];
+        hako::pdu::activate_server(&udp_server_ip_port);
+        let udp_sender_ip_port: String = ipaddr + ":" + &args[5];
+        socket = Some(hako::pdu::create_publisher_udp_socket(&udp_sender_ip_port));
     }
 
     println!("delta_msec = {}", delta_msec);
@@ -64,7 +68,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }    
     });
 
-    let future = server::start_service();
+    let future = server::start_service(&args[3]);
     future.await?;
     Ok(())
 }

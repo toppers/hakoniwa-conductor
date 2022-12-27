@@ -325,7 +325,7 @@ impl CoreService for HakoCoreService {
         &self,
         request: Request<CreatePduChannelRequest>,
     ) -> Result<Response<CreatePduChannelReply>, Status> {
-        println!("notify_simtime: Got a request: {:?}", request);
+        println!("create_pdu_channel: Got a request: {:?}", request);
 
         let req = request.into_inner();
         let result = hako::asset_create_pdu_channel(req.asset_name, req.channel_id, req.pdu_size);
@@ -349,7 +349,7 @@ impl CoreService for HakoCoreService {
         &self,
         request: Request<SubscribePduChannelRequest>,
     ) -> Result<Response<SubscribePduChannelReply>, Status> {
-        println!("notify_simtime: Got a request: {:?}", request);
+        println!("subscribe_pdu_channel: Got a request: {:?}", request);
 
         let req = request.into_inner();
         let result = hako::pdu::create_asset_sub_pdu(req.asset_name, req.channel_id, req.pdu_size, req.listen_udp_ip_port);
@@ -368,10 +368,10 @@ impl CoreService for HakoCoreService {
     }
 }
 
-pub async fn start_service() -> Result<(), Box<dyn std::error::Error>>
+pub async fn start_service(ip_port: &String) -> Result<(), Box<dyn std::error::Error>>
 {
     println!("hello world");
-    let addr = "[::1]:50051".parse().unwrap();
+    let addr = ip_port.parse().unwrap();
     let service = HakoCoreService::default();
 
     hako::api::asset_init();
