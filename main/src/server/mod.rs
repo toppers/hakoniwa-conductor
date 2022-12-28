@@ -370,7 +370,6 @@ impl CoreService for HakoCoreService {
 
 pub async fn start_service(ip_port: &String) -> Result<(), Box<dyn std::error::Error>>
 {
-    println!("hello world");
     let addr = ip_port.parse().unwrap();
     let service = HakoCoreService::default();
 
