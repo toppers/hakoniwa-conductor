@@ -1,0 +1,5 @@
+#!/bin/bash
+
+ipcrm -S 0x000000ff > /dev/null 2> /dev/null
+ipcrm -M 0x000000ff > /dev/null 2> /dev/null
+

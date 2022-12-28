@@ -29,12 +29,21 @@ fi
 
 HAKO_CORE_LIB=${HAKO_CORE_PATH}/cmake-build/src/hakoc/libshakoc.${EXT_NAME}
 HAKO_LIB_DIR=/usr/local/lib/hakoniwa
+HAKO_BIN_DIR=/usr/local/bin/hakoniwa
 if [ -d ${HAKO_LIB_DIR} ]
 then
 	echo "PASSED: found ${HAKO_LIB_DIR}"
 else
 	echo "ERROR: not found hakoniwa library dir: ${HAKO_LIB_DIR}"
 	echo "Please mkdir ${HAKO_LIB_DIR}"
+	exit 1
+fi
+if [ -d ${HAKO_BIN_DIR} ]
+then
+	echo "PASSED: found ${HAKO_BIN_DIR}"
+else
+	echo "ERROR: not found hakoniwa bin dir: ${HAKO_BIN_DIR}"
+	echo "Please mkdir ${HAKO_BIN_DIR}"
 	exit 1
 fi
 
@@ -111,3 +120,10 @@ fi
 echo "OK!!"
 echo "Please build hakoniwa-master for rust"
 echo "BUILD: cargo build"
+cargo build
+sudo cp ./target/debug/main ${HAKO_BIN_DIR}/hako-master-rust
+sudo cp hako-master ${HAKO_BIN_DIR}/hako-master
+sudo cp hako-cleanup ${HAKO_BIN_DIR}/hako-cleanup
+sudo chmod +x ${HAKO_BIN_DIR}/hako-master
+sudo chmod +x ${HAKO_BIN_DIR}/hako-cleanup
+

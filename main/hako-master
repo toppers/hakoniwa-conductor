@@ -1,0 +1,5 @@
+#!/bin/bash
+
+hako-cleanup
+
+hako-master-rust $*

@@ -295,7 +295,7 @@ impl CoreService for HakoCoreService {
         request: Request<NotifySimtimeRequest>,
     ) -> Result<Response<NotifySimtimeReply>, Status>
     {
-        println!("notify_simtime: Got a request: {:?}", request);
+        //println!("notify_simtime: Got a request: {:?}", request);
 
         let req = request.into_inner();
         let asset_info = req.asset.unwrap();
