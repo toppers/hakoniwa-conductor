@@ -167,13 +167,13 @@ pub fn simevent_get_state() -> SimulationStateType
     unsafe {
         let ev = hako_simevent_get_state();
         match ev {
-            0 => SimulationStateType::None,
-            1 => SimulationStateType::Stopped,
-            2 => SimulationStateType::Runnable,
-            3 => SimulationStateType::Running,
-            4 => SimulationStateType::Stopping,
-            5 => SimulationStateType::Resetting,
-            6 => SimulationStateType::Error,
+            0 => SimulationStateType::Stopped,
+            1 => SimulationStateType::Runnable,
+            2 => SimulationStateType::Running,
+            3 => SimulationStateType::Stopping,
+            4 => SimulationStateType::Resetting,
+            5 => SimulationStateType::Error,
+            6 => SimulationStateType::Invalid,
             _ => SimulationStateType::Invalid,
         }
     }
