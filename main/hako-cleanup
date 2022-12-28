@@ -1,5 +1,7 @@
 #!/bin/bash
 
 ipcrm -S 0x000000ff > /dev/null 2> /dev/null
+ipcrm -S 0x00000100 > /dev/null 2> /dev/null
 ipcrm -M 0x000000ff > /dev/null 2> /dev/null
+ipcrm -M 0x00000100 > /dev/null 2> /dev/null
 

@@ -28,6 +28,9 @@ fn get_status() -> SimulationStatus
         hako::api::SimulationStateType::Running => {
             return SimulationStatus::StatusRunning;
         },
+        hako::api::SimulationStateType::Stopped => {
+            return SimulationStatus::StatusStopped;
+        },
         hako::api::SimulationStateType::Stopping => {
             return SimulationStatus::StatusStopping;
         },
