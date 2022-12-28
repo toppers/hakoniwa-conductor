@@ -1,5 +1,15 @@
 #!/bin/bash
 
+function signal_handler() 
+{
+	echo "CLEANING UP semaphore && shared memory"
+	hako-cleanup
+	echo "EXIT"
+	exit 0
+}
+
+trap signal_handler INT TERM
+
 hako-cleanup
 
 hako-master-rust $*
