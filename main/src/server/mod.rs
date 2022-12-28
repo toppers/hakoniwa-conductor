@@ -216,37 +216,42 @@ impl CoreService for HakoCoreService {
 
         tokio::spawn(async move {
             loop {
+                tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
                 let ev = hako::api::asset_get_event(req.name.clone());
                 match ev {
                     hako::api::SimulationAssetEventType::None => {
-                        tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
                         let ev = hakoniwa::AssetNotification {
                             event: AssetNotificationEvent::Heartbeat as i32,
                         };
+                        //println!("## SimulationAssetEvent NONE");
                         tx.send(Ok(ev)).await.unwrap();
                     },
                     hako::api::SimulationAssetEventType::Start => {
                         let ev = hakoniwa::AssetNotification {
                             event: AssetNotificationEvent::Start as i32,
                         };
+                        println!("## SimulationAssetEvent START");
                         tx.send(Ok(ev)).await.unwrap();
                     },
                     hako::api::SimulationAssetEventType::Stop => {
                         let ev = hakoniwa::AssetNotification {
                             event: AssetNotificationEvent::Stop as i32,
                         };
+                        println!("## SimulationAssetEvent STOP");
                         tx.send(Ok(ev)).await.unwrap();
                     },
                     hako::api::SimulationAssetEventType::Reset => {
                         let ev = hakoniwa::AssetNotification {
                             event: AssetNotificationEvent::Reset as i32,
                         };
+                        println!("## SimulationAssetEvent RESET");
                         tx.send(Ok(ev)).await.unwrap();
                     },
                     hako::api::SimulationAssetEventType::Error => {
                         let ev = hakoniwa::AssetNotification {
                             event: AssetNotificationEvent::Error as i32,
                         };
+                        println!("## SimulationAssetEvent ERROR");
                         tx.send(Ok(ev)).await.unwrap();
                     },
                     _ => {
