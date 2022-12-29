@@ -93,7 +93,7 @@ fi
 #Library check
 if [ $OS_TYPE = "Linux" ]
 then
-	sudo ldconfig -p | grep libc++.so
+	ldconfig -p | grep libc++.so
 	if [ $? -ne 0 ]
 	then
 		echo "FALIED: not found libc++.so"
@@ -102,7 +102,7 @@ then
 	else
 		echo "PASSED: found libc++.so"
 	fi
-	sudo ldconfig -p | grep libc++abi.so
+	ldconfig -p | grep libc++abi.so
 	if [ $? -ne 0 ]
 	then
 		echo "FALIED: not found libc++abi.so"
@@ -121,9 +121,9 @@ echo "OK!!"
 echo "Please build hakoniwa-master for rust"
 echo "BUILD: cargo build"
 cargo build
-sudo cp ./target/debug/main ${HAKO_BIN_DIR}/hako-master-rust
-sudo cp hako-master ${HAKO_BIN_DIR}/hako-master
-sudo cp hako-cleanup ${HAKO_BIN_DIR}/hako-cleanup
-sudo chmod +x ${HAKO_BIN_DIR}/hako-master
-sudo chmod +x ${HAKO_BIN_DIR}/hako-cleanup
+cp ./target/debug/main ${HAKO_BIN_DIR}/hako-master-rust
+cp hako-master ${HAKO_BIN_DIR}/hako-master
+cp hako-cleanup ${HAKO_BIN_DIR}/hako-cleanup
+chmod +x ${HAKO_BIN_DIR}/hako-master
+chmod +x ${HAKO_BIN_DIR}/hako-cleanup
 
