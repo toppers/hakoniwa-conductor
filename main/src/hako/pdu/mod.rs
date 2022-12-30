@@ -94,7 +94,7 @@ pub fn send_all_subscriber(socket: &UdpSocket)
             pdu.asset_name.as_ptr() as *const c_char, 
             channel_id.clone(), 
             buf.as_mut_ptr() as *mut c_char, 
-            buf.len() as i32);
+            pdu.pdu_size as i32);
         if result {
             send_one_subscriber(socket, pdu, channel_id.clone(), &buf, pdu.pdu_size as usize);
         }
