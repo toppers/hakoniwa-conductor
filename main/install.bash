@@ -118,7 +118,7 @@ then
 fi
 
 echo "OK!!"
-echo "Please build hakoniwa-master for rust"
+echo "Please build hakoniwa-conductor for rust"
 echo "BUILD: cargo build"
 cargo build
 cp ./target/debug/main ${HAKO_BIN_DIR}/hako-master-rust
