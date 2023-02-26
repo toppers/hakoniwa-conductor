@@ -34,14 +34,14 @@ jobs:
       - name: Download hakoniwa-core-cpp for Linux
         if:  " (runner.os == 'Linux')"
         run: |
-          wget https://github.com/toppers/hakoniwa-core-cpp-client/releases/download/v1.0.1/libshakoc.so -P /usr/local/lib/hakoniwa/
+          sudo wget https://github.com/toppers/hakoniwa-core-cpp-client/releases/download/v1.0.1/libshakoc.so -P /usr/local/lib/hakoniwa/
           sudo apt-get update
           sudo apt-get install -y libc++-dev libc++abi-dev
 
       - name: Download hakoniwa-core-cpp for Mac(intell)
         if:  " (runner.os == 'macOS')"
         run: |
-          wget https://github.com/toppers/hakoniwa-core-cpp-client/releases/download/v1.0.0/libshakoc.dylib -P /usr/local/lib/hakoniwa/
+          sudo wget https://github.com/toppers/hakoniwa-core-cpp-client/releases/download/v1.0.0/libshakoc.dylib -P /usr/local/lib/hakoniwa/
 
       - name: Build hakoniwa-conductor
         run: |
