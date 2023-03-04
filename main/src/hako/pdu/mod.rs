@@ -8,6 +8,7 @@ use crate::hako::api;
 use libc::c_char;
 
 const ASSET_PACKET_MAX_SIZE: usize = 4096;
+const ASSET_RECV_PACKET_MAX_SIZE: usize = 1024 * 1024;
 struct AssetPubPduType {
     asset_name: String,
     pdu_size: i32,
@@ -38,22 +39,27 @@ pub fn activate_server(ip_port: &String)
     }
     let socket = UdpSocket::bind(ip_port).unwrap();
     std::thread::spawn(move || {
-        let mut buf = [0; ASSET_PACKET_MAX_SIZE];
+        let mut buf : Box<[u8]> = Box::new([0; ASSET_RECV_PACKET_MAX_SIZE]);
         loop {
             match socket.recv_from(&mut buf) {
                 Ok((_buf_size, _src_addr)) => {
-                  //0..3: channel id
-                  //4..7: bufsize
-                  let mut buf_ch = [0;4];
-                  let mut buf_sz = [0;4];
-                  for i in 0..4 {
-                    buf_ch[i] = buf[i];
-                    buf_sz[i] = buf[i + 4];
+                  if _buf_size > ASSET_RECV_PACKET_MAX_SIZE {
+                    println!("UDP recv buffer size(={}) is over max size(={})\n", _buf_size, ASSET_RECV_PACKET_MAX_SIZE);
                   }
-                  let channel_id = i32::from_le_bytes(buf_ch);
-                  let pdu_size = i32::from_le_bytes(buf_sz);
-                  //8..bufsize: buffer
-                  write_asset_pub_pdu(channel_id, &buf[8..], pdu_size as usize);
+                  else {
+                    //0..3: channel id
+                    //4..7: bufsize
+                    let mut buf_ch = [0;4];
+                    let mut buf_sz = [0;4];
+                    for i in 0..4 {
+                        buf_ch[i] = buf[i];
+                        buf_sz[i] = buf[i + 4];
+                    }
+                    let channel_id = i32::from_le_bytes(buf_ch);
+                    let pdu_size = i32::from_le_bytes(buf_sz);
+                    //8..bufsize: buffer
+                    write_asset_pub_pdu(channel_id, &buf[8..], pdu_size as usize);
+                  }
                 },
                 Err(e) => {
                   println!("couldn't recieve request: {:?}", e);
