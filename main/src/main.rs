@@ -35,9 +35,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut socket: Option<UdpSocket> = None;
     if args.len() == 6 {
         let udp_server_ip_port: String = ipaddr.clone() + ":" + &args[4];
-        hako::pdu::activate_server(&udp_server_ip_port);
+        hako::method::udp::activate_server(&udp_server_ip_port);
         let udp_sender_ip_port: String = ipaddr + ":" + &args[5];
-        socket = Some(hako::pdu::create_publisher_udp_socket(&udp_sender_ip_port));
+        socket = Some(hako::method::udp::create_publisher_udp_socket(&udp_sender_ip_port));
     }
 
     println!("delta_msec = {}", delta_msec);
@@ -58,7 +58,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     if hako::api::master_execute() {
                         match socket {
                             Some(ref _n) => {
-                                hako::pdu::send_all_subscriber(socket.as_ref().unwrap());
+                                hako::method::udp::send_all_subscriber(socket.as_ref().unwrap());
                             },
                             None => ()
                         }

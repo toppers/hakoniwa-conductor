@@ -336,11 +336,13 @@ impl CoreService for HakoCoreService {
         println!("create_pdu_channel: Got a request: {:?}", request);
 
         let req = request.into_inner();
-        let result = hako::asset_create_pdu_channel(req.asset_name, req.channel_id, req.pdu_size);
+        //TODO method_type
+        let method_type: String = String::from("UDP");
+        let result = hako::asset_create_pdu_channel(req.asset_name, req.channel_id, req.pdu_size, method_type);
         if result {
             let reply = hakoniwa::CreatePduChannelReply {
                 ercd: ErrorCode::Ok as i32,
-                master_udp_port: hako::pdu::get_server_port() as i32
+                master_udp_port: hako::method::udp::get_server_port() as i32
             };
             Ok(Response::new(reply))
         }
@@ -360,7 +362,8 @@ impl CoreService for HakoCoreService {
         println!("subscribe_pdu_channel: Got a request: {:?}", request);
 
         let req = request.into_inner();
-        let result = hako::pdu::create_asset_sub_pdu(req.asset_name, req.channel_id, req.pdu_size, req.listen_udp_ip_port);
+        let method_type: String = String::from("UDP"); 
+        let result = hako::pdu::create_asset_sub_pdu(req.asset_name, req.channel_id, req.pdu_size, req.listen_udp_ip_port, method_type);
         if result {
             let reply = hakoniwa::SubscribePduChannelReply {
                 ercd: ErrorCode::Ok as i32
