@@ -41,7 +41,8 @@ pub fn activate_server(ip_port: &String)
                     let channel_id = i32::from_le_bytes(buf_ch);
                     let pdu_size = i32::from_le_bytes(buf_sz);
                     //8..bufsize: buffer
-                    write_asset_pub_pdu(channel_id, &buf[8..], pdu_size as usize);
+                    let ret = write_asset_pub_pdu(channel_id, &buf[8..], pdu_size as usize);
+                    assert!(ret == true);
                   }
                 },
                 Err(e) => {

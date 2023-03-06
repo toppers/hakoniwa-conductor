@@ -117,7 +117,7 @@ pub fn get_asset_pub_pdu_size(channel_id: i32) -> i32
     };
     size
 }
-pub fn write_asset_pub_pdu(channel_id: i32, data: &[u8], size: usize)
+pub fn write_asset_pub_pdu(channel_id: i32, data: &[u8], size: usize) -> bool
 {
     let map = ASSET_PUB_PDU_CHANNELS.lock().unwrap();
     let pdu = map.get(&channel_id).unwrap();
@@ -125,5 +125,5 @@ pub fn write_asset_pub_pdu(channel_id: i32, data: &[u8], size: usize)
         pdu.asset_name.as_ptr() as *const c_char, 
         channel_id.clone(), 
         data.as_ptr() as *const c_char, 
-        size as i32);
+        size as i32)
 }

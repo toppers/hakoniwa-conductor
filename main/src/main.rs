@@ -36,10 +36,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.len() == 6 {
         let udp_server_ip_port: String = ipaddr.clone() + ":" + &args[4];
         hako::method::udp::activate_server(&udp_server_ip_port);
-        let udp_sender_ip_port: String = ipaddr + ":" + &args[5];
+        let udp_sender_ip_port: String = ipaddr.clone() + ":" + &args[5];
         socket = Some(hako::method::udp::create_publisher_udp_socket(&udp_sender_ip_port));
     }
-
+    hako::method::mqtt::set_mqtt_url(ipaddr.clone(), 1883);
+    //hako::method::mqtt::activate_server();
     println!("delta_msec = {}", delta_msec);
     println!("max_delay_msec = {}", max_delay_msec);
     let delta_usec: i64 = delta_msec * 1000;

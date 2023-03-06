@@ -233,6 +233,7 @@ impl CoreService for HakoCoreService {
                         let ev = hakoniwa::AssetNotification {
                             event: AssetNotificationEvent::Start as i32,
                         };
+                        //hako::method::mqtt::activate_server();
                         println!("## SimulationAssetEvent START");
                         tx.send(Ok(ev)).await.unwrap();
                     },
