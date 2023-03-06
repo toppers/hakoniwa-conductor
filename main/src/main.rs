@@ -12,8 +12,8 @@ pub mod server;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
-    if args.len() != 4 && args.len() != 6 {
-        println!("Usage: {} <delta_msec> <max_delay_msec> <ipaddr>:<port> [<udp_server_port>] [<udp_sender_port>]", args[0]);
+    if args.len() != 4 && args.len() != 6 && args.len() != 7 {
+        println!("Usage: {} <delta_msec> <max_delay_msec> <ipaddr>:<port> [<udp_server_port> <udp_sender_port> [mqtt_portno]]", args[0]);
         std::process::exit(1);
     }
     let delta_msec: i64 = match args[1].parse::<i64>() {
@@ -39,8 +39,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let udp_sender_ip_port: String = ipaddr.clone() + ":" + &args[5];
         socket = Some(hako::method::udp::create_publisher_udp_socket(&udp_sender_ip_port));
     }
-    hako::method::mqtt::set_mqtt_url(ipaddr.clone(), 1883);
-    //hako::method::mqtt::activate_server();
+    if args.len() == 7 {
+        hako::method::mqtt::set_mqtt_url(ipaddr.clone(), args[6].parse::<i32>().unwrap());
+    }
     println!("delta_msec = {}", delta_msec);
     println!("max_delay_msec = {}", max_delay_msec);
     let delta_usec: i64 = delta_msec * 1000;

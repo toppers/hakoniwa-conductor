@@ -233,7 +233,9 @@ impl CoreService for HakoCoreService {
                         let ev = hakoniwa::AssetNotification {
                             event: AssetNotificationEvent::Start as i32,
                         };
-                        //hako::method::mqtt::activate_server();
+                        if hako::method::mqtt::is_enabled() {
+                            hako::method::mqtt::activate_server();
+                        }
                         println!("## SimulationAssetEvent START");
                         tx.send(Ok(ev)).await.unwrap();
                     },
@@ -337,8 +339,8 @@ impl CoreService for HakoCoreService {
         println!("create_pdu_channel: Got a request: {:?}", request);
 
         let req = request.into_inner();
-        //TODO method_type
-        let method_type: String = String::from("UDP");
+
+        let method_type: String = req.method_type;
         let result = hako::asset_create_pdu_channel(req.asset_name, req.channel_id, req.pdu_size, method_type);
         if result {
             let reply = hakoniwa::CreatePduChannelReply {
@@ -363,7 +365,7 @@ impl CoreService for HakoCoreService {
         println!("subscribe_pdu_channel: Got a request: {:?}", request);
 
         let req = request.into_inner();
-        let method_type: String = String::from("UDP"); 
+        let method_type: String = req.method_type;
         let result = hako::pdu::create_asset_sub_pdu(req.asset_name, req.channel_id, req.pdu_size, req.listen_udp_ip_port, method_type);
         if result {
             let reply = hakoniwa::SubscribePduChannelReply {

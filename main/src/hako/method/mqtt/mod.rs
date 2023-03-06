@@ -22,6 +22,11 @@ pub fn set_mqtt_url(ipaddr: String, port: i32)
         v.push(mqtt_url);
     }
 }
+pub fn is_enabled() -> bool
+{
+    let v = MQTT_URL.lock().unwrap();
+    v.is_empty() == false
+}
 pub fn get_mqtt_url() -> String
 {
     let v = MQTT_URL.lock().unwrap();
