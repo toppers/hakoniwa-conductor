@@ -341,18 +341,27 @@ impl CoreService for HakoCoreService {
         let req = request.into_inner();
 
         let method_type: String = req.method_type;
-        let result = hako::asset_create_pdu_channel(req.asset_name, req.channel_id, req.pdu_size, method_type);
+        let result = hako::asset_create_pdu_channel(req.asset_name, req.channel_id, req.pdu_size, method_type.clone());
         if result {
-            let reply = hakoniwa::CreatePduChannelReply {
-                ercd: ErrorCode::Ok as i32,
-                master_udp_port: hako::method::udp::get_server_port() as i32
-            };
-            Ok(Response::new(reply))
+            if method_type == "UDP" {
+                let reply = hakoniwa::CreatePduChannelReply {
+                    ercd: ErrorCode::Ok as i32,
+                    port: hako::method::udp::get_server_port() as i32
+                };
+                Ok(Response::new(reply))
+            }
+            else {
+                let reply = hakoniwa::CreatePduChannelReply {
+                    ercd: ErrorCode::Ok as i32,
+                    port: hako::method::mqtt::get_mqtt_port() as i32
+                };    
+                Ok(Response::new(reply))
+            }
         }
         else {
             let reply = hakoniwa::CreatePduChannelReply {
                 ercd: ErrorCode::Inval as i32,
-                master_udp_port: -1 as i32
+                port: -1 as i32
             };
             Ok(Response::new(reply))
         }

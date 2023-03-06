@@ -10,17 +10,32 @@ use crate::hako::pdu::ASSET_SUB_PDU_CHANNELS;
 use crate::hako::pdu::write_asset_pub_pdu;
 static mut MQTT_SERVER_ACTIVATED: bool = false;
 
-static MQTT_URL: Lazy<Mutex<Vec<String>>> = Lazy::new(|| {
+struct MqttOptions {
+    pub url: String,
+    pub portno: i32
+}
+static MQTT_URL: Lazy<Mutex<Vec<MqttOptions>>> = Lazy::new(|| {
     Mutex::new(vec![])
 });
 pub fn set_mqtt_url(ipaddr: String, port: i32)
 {
     let mut v = MQTT_URL.lock().unwrap();
     if v.is_empty() {
-        let mqtt_url = format!("mqtt://{}:{}", ipaddr, port);
-        println!("mqtt_url={}", mqtt_url.clone());
-        v.push(mqtt_url);
+        let mqtt_options = MqttOptions {
+            url: format!("mqtt://{}:{}", ipaddr.clone(), port),
+            portno: port
+        };
+        println!("mqtt_url={}", mqtt_options.url.clone());
+        v.push(mqtt_options);
     }
+}
+pub fn get_mqtt_port() -> i32
+{
+    let v = MQTT_URL.lock().unwrap();
+    if v.is_empty() {
+        return -1;
+    }
+    v.first().unwrap().portno
 }
 pub fn is_enabled() -> bool
 {
@@ -33,7 +48,7 @@ pub fn get_mqtt_url() -> String
     if v.is_empty() {
         return String::from("None");
     }
-    v.first().unwrap().clone()
+    v.first().unwrap().url.clone()
 }
 
 fn create_topics(topics: &mut Vec<String>, qoss: &mut Vec<i32>)
