@@ -33,7 +33,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let v: Vec<&str> = args[3].split(':').collect();
     let ipaddr: String = String::from(v[0]);
     let mut socket: Option<UdpSocket> = None;
-    if args.len() == 6 {
+    if args.len() >= 6 {
         let udp_server_ip_port: String = ipaddr.clone() + ":" + &args[4];
         hako::method::udp::activate_server(&udp_server_ip_port);
         let udp_sender_ip_port: String = ipaddr.clone() + ":" + &args[5];

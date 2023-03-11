@@ -27,7 +27,7 @@ pub static ASSET_SUB_PDU_CHANNELS: Lazy<Mutex<HashMap<i32, AssetSubPduType>>> = 
     let m = HashMap::new();
     Mutex::new(m)
 });
-static ASSET_PUB_PDU_CHANNELS: Lazy<Mutex<HashMap<i32, AssetPubPduType>>> = Lazy::new(|| {
+pub static ASSET_PUB_PDU_CHANNELS: Lazy<Mutex<HashMap<i32, AssetPubPduType>>> = Lazy::new(|| {
     let m = HashMap::new();
     Mutex::new(m)
 });
@@ -96,6 +96,7 @@ pub fn create_asset_pub_pdu(asset_name: String, channel_id: i32, pdu_size: i32, 
                 pdu_size: pdu_size,
                 method_type: method_type
             };
+            println!("create_asset_pub_pdu: channel_ID={}", channel_id);
             map.insert(channel_id, pdu);
             return true;
         }

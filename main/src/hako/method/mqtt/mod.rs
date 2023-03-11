@@ -6,7 +6,7 @@ use paho_mqtt as mqtt;
 use std::{process, time::Duration};
 use async_std;
 use std::{sync::Mutex};
-use crate::hako::pdu::ASSET_SUB_PDU_CHANNELS;
+use crate::hako::pdu::ASSET_PUB_PDU_CHANNELS;
 use crate::hako::pdu::write_asset_pub_pdu;
 static mut MQTT_SERVER_ACTIVATED: bool = false;
 
@@ -53,11 +53,13 @@ pub fn get_mqtt_url() -> String
 
 fn create_topics(topics: &mut Vec<String>, qoss: &mut Vec<i32>)
 {
-    let mut map = ASSET_SUB_PDU_CHANNELS.lock().unwrap();
+    let mut map = ASSET_PUB_PDU_CHANNELS.lock().unwrap();
     for (channel_id, pdu) in map.iter_mut() {
     //for channel_id in 0..4 {
+        println!("create topic: channel_id={} method_type={}", channel_id, pdu.method_type);
         if pdu.method_type == "MQTT" {
             let combined = format!("hako_mqtt_{}", channel_id);
+            println!("create topic: {}", combined.clone());
             topics.push(combined);
             qoss.push(1);
         }
@@ -66,7 +68,7 @@ fn create_topics(topics: &mut Vec<String>, qoss: &mut Vec<i32>)
 
 fn get_channel_id(topic: String) -> i32
 {
-    let mut map = ASSET_SUB_PDU_CHANNELS.lock().unwrap();
+    let mut map = ASSET_PUB_PDU_CHANNELS.lock().unwrap();
     for (channel_id, pdu) in map.iter_mut() {
     //for channel_id in 0..4 {
         if pdu.method_type == "MQTT" {
@@ -141,6 +143,7 @@ pub fn activate_server()
                     //println!("{}", msg);
                     let channel_id = get_channel_id(msg.topic().to_string());
                     assert!(channel_id >= 0);
+                    //println!("write_asset_pub_pdu: channel_id={} size={}", channel_id, msg.payload().len());
                     let ret = write_asset_pub_pdu(channel_id, msg.payload(), msg.payload().len());
                     assert!(ret == true);
                 }
