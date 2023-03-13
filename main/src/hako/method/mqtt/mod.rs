@@ -7,8 +7,11 @@ use std::{process, time::Duration};
 use async_std;
 use std::{sync::Mutex};
 use crate::hako::pdu::ASSET_PUB_PDU_CHANNELS;
+use crate::hako::pdu::ASSET_SUB_PDU_CHANNELS;
 use crate::hako::pdu::write_asset_pub_pdu;
 static mut MQTT_SERVER_ACTIVATED: bool = false;
+use libc::c_char;
+use crate::hako::api;
 
 struct MqttOptions {
     pub url: String,
@@ -119,7 +122,7 @@ pub fn activate_server()
                 .finalize();
     
             // Make the connection to the broker
-            println!("Connecting to the MQTT server...");
+            println!("SUBSCRIBER Connecting to the MQTT server...");
             //cli.connect(conn_opts).await?;
             while let Err(err) = cli.connect(conn_opts.clone()).await {
                 println!("Error reconnecting: {}", err);
@@ -166,8 +169,53 @@ pub fn activate_server()
     });
 }
 
-
-pub fn send_all_subscriber()
+pub async fn create_mqtt_publisher() -> Option<mqtt::AsyncClient>
 {
-    //Not supported...
+    let ip_port = get_mqtt_url();
+    let create_opts = mqtt::CreateOptionsBuilder::new_v3()
+        .server_uri(ip_port)
+        .client_id("hako-mqtt_publisher")
+        .finalize();
+    let cli = mqtt::AsyncClient::new(create_opts).unwrap_or_else(|e| {
+        println!("Error creating the client: {:?}", e);
+        process::exit(1);
+    });
+    let lwt = mqtt::Message::new("topic", "Async publisher lost connection", mqtt::QOS_1);
+
+    // Create the connect options, explicitly requesting MQTT v3.x
+    let conn_opts = mqtt::ConnectOptionsBuilder::new_v3()
+        .keep_alive_interval(Duration::from_secs(30))
+        .clean_session(false)
+        .will_message(lwt)
+        .finalize();
+
+    println!("PUBLISHER Connecting to the MQTT server...");
+    while let Err(err) = cli.connect(conn_opts.clone()).await {
+        println!("Error reconnecting: {}", err);
+        // For tokio use: tokio::time::delay_for()
+        async_std::task::sleep(Duration::from_millis(1000)).await;
+    }
+    println!("PUBLISHER CONNECTED to the MQTT server...");
+    Some(cli)
+}
+
+pub async fn publish_mqtt_topics(cli: &mqtt::AsyncClient)
+{
+    let mut map = ASSET_SUB_PDU_CHANNELS.lock().unwrap();
+    for (channel_id, pdu) in map.iter_mut() {
+        if pdu.method_type == "MQTT" {
+            assert!(pdu.pdu_size < 4096);
+            let mut buf : Box<[u8]> = Box::new([0; 4096]);
+            let result = api::asset_read_pdu(
+                pdu.asset_name.as_ptr() as *const c_char, 
+                channel_id.clone(), 
+                buf.as_mut_ptr() as *mut i8, 
+                pdu.pdu_size as i32);
+            if result {
+                let topic = format!("hako_mqtt_{}", channel_id);
+                let msg = mqtt::Message::new(topic, buf, mqtt::QOS_1);
+                cli.publish(msg).await.expect("Can not Publish msg");
+            }
+        }
+    }
 }

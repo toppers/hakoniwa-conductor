@@ -4,6 +4,7 @@ extern crate chan_signal;
 use chan_signal::Signal;
 use std::env;
 use std::net::UdpSocket;
+use paho_mqtt as mqtt;
 
 //internal modules
 pub mod hako;
@@ -39,8 +40,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let udp_sender_ip_port: String = ipaddr.clone() + ":" + &args[5];
         socket = Some(hako::method::udp::create_publisher_udp_socket(&udp_sender_ip_port));
     }
+    let mut cli: Option<mqtt::AsyncClient> = None;
     if args.len() == 7 {
         hako::method::mqtt::set_mqtt_url(ipaddr.clone(), args[6].parse::<i32>().unwrap());
+        //hako::method::mqtt::activate_server();
+        cli = hako::method::mqtt::create_mqtt_publisher().await;
     }
     println!("delta_msec = {}", delta_msec);
     println!("max_delay_msec = {}", max_delay_msec);
@@ -63,6 +67,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 hako::method::udp::send_all_subscriber(socket.as_ref().unwrap());
                             },
                             None => ()
+                        }
+                        if hako::method::mqtt::is_enabled() {
+                            match cli {
+                                Some(ref _n) => {
+                                    let _res = hako::method::mqtt::publish_mqtt_topics(cli.as_ref().unwrap());
+                                },
+                                None => ()
+                            }
                         }
                     }
                 }
