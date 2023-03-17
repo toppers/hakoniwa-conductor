@@ -40,11 +40,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let udp_sender_ip_port: String = ipaddr.clone() + ":" + &args[5];
         socket = Some(hako::method::udp::create_publisher_udp_socket(&udp_sender_ip_port));
     }
-    let mut cli: Option<mqtt::AsyncClient> = None;
+    let mut cli: Option<mqtt::Client> = None;
     if args.len() == 7 {
         hako::method::mqtt::set_mqtt_url(ipaddr.clone(), args[6].parse::<i32>().unwrap());
         //hako::method::mqtt::activate_server();
-        cli = hako::method::mqtt::create_mqtt_publisher().await;
+        cli = hako::method::mqtt::create_mqtt_publisher();
     }
     println!("delta_msec = {}", delta_msec);
     println!("max_delay_msec = {}", max_delay_msec);
@@ -68,10 +68,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             },
                             None => ()
                         }
+                        //println!("is_enabled={}", hako::method::mqtt::is_enabled() );
                         if hako::method::mqtt::is_enabled() {
+                            //println!("start mqtt send1");
                             match cli {
                                 Some(ref _n) => {
-                                    let _res = hako::method::mqtt::publish_mqtt_topics(cli.as_ref().unwrap());
+                                    //println!("start mqtt send2");
+                                    hako::method::mqtt::publish_mqtt_topics(_n);
                                 },
                                 None => ()
                             }
