@@ -25,7 +25,7 @@ extern "C" {
     fn hako_asset_stop_feedback(name: *const c_char, is_ok: bool) -> bool;
     fn hako_asset_reset_feedback(name: *const c_char, is_ok: bool) -> bool;
     // pdu apis
-    fn hako_asset_create_pdu_channel(channel_id: i32, pdu_size: i32) -> bool;
+    fn hako_asset_create_pdu_lchannel(asset_name: *const c_char, channel_id: i32, pdu_size: i32) -> bool;
     fn hako_asset_is_pdu_dirty(asset_name: *const c_char, channel_id: i32) -> bool;
     fn hako_asset_write_pdu(asset_name: *const c_char, channel_id: i32, pdu_data: *const c_char, len: i32) -> bool;
     fn hako_asset_read_pdu(asset_name: *const c_char, channel_id: i32, pdu_data: *mut c_char, len: i32) -> bool;
@@ -197,10 +197,10 @@ pub fn simevent_reset() -> bool
     }
 }
 // pdu apis
-pub fn asset_create_pdu_channel(channel_id: i32, pdu_size: i32) -> bool
+pub fn asset_create_pdu_lchannel(asset_name: *const c_char, channel_id: i32, pdu_size: i32) -> bool
 {
     unsafe {
-        hako_asset_create_pdu_channel(channel_id, pdu_size)
+        hako_asset_create_pdu_lchannel(asset_name, channel_id, pdu_size)
     }
 }
 pub fn asset_is_pdu_dirty(asset_name: *const c_char, channel_id: i32) -> bool

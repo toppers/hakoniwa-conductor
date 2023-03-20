@@ -341,7 +341,7 @@ impl CoreService for HakoCoreService {
         let req = request.into_inner();
 
         let method_type: String = req.method_type;
-        let result = hako::asset_create_pdu_channel(req.asset_name, req.channel_id, req.pdu_size, method_type.clone());
+        let result = hako::asset_create_pdu_lchannel(req.asset_name, req.channel_id, req.pdu_size, method_type.clone());
         if result {
             if method_type == "UDP" {
                 let reply = hakoniwa::CreatePduChannelReply {
