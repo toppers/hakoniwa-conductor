@@ -197,10 +197,12 @@ pub fn simevent_reset() -> bool
     }
 }
 // pdu apis
-pub fn asset_create_pdu_lchannel(asset_name: *const c_char, channel_id: i32, pdu_size: i32) -> bool
+pub fn asset_create_pdu_lchannel(asset_name: String, channel_id: i32, pdu_size: i32) -> bool
 {
     unsafe {
-        hako_asset_create_pdu_lchannel(asset_name, channel_id, pdu_size)
+        let c_string: CString = CString::new(asset_name).unwrap();
+        let c_string_ptr: *const c_char = c_string.as_ptr();
+        hako_asset_create_pdu_lchannel(c_string_ptr, channel_id, pdu_size)
     }
 }
 pub fn asset_is_pdu_dirty(asset_name: *const c_char, channel_id: i32) -> bool
