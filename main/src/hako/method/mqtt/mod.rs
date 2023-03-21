@@ -59,11 +59,11 @@ pub fn get_mqtt_url() -> String
 fn create_topics(topics: &mut Vec<String>, qoss: &mut Vec<i32>)
 {
     let mut map = ASSET_PUB_PDU_CHANNELS.lock().unwrap();
-    for (channel_id, pdu) in map.iter_mut() {
+    for (real_id, pdu) in map.iter_mut() {
     //for channel_id in 0..4 {
-        println!("create topic: channel_id={} method_type={}", channel_id, pdu.method_type);
+        println!("create topic: real_id={} method_type={}", real_id, pdu.method_type);
         if pdu.method_type == "MQTT" {
-            let combined = format!("hako_mqtt_{}_{}", pdu.robo_name, channel_id);
+            let combined = format!("hako_mqtt_{}_{}", pdu.robo_name, pdu.channel_id);
             println!("create topic: {}", combined.clone());
             topics.push(combined);
             qoss.push(1);
@@ -145,10 +145,10 @@ pub fn activate_server()
     
             while let Some(msg_opt) = strm.next().await {
                 if let Some(msg) = msg_opt {
-                    //println!("{}", msg);
+                    //println!("recv topic={}", msg.topic());
                     let real_id = get_channel_id(msg.topic().to_string());
                     assert!(real_id >= 0);
-                    //println!("write_asset_pub_pdu: channel_id={} size={}", channel_id, msg.payload().len());
+                    //println!("write_asset_pub_pdu: real_id={} size={}", real_id, msg.payload().len());
                     let (channel_id, robo_name) = get_asset_pub_pdu_channel_robo_name(real_id);
                     let ret = write_asset_pub_pdu(robo_name, channel_id, msg.payload(), msg.payload().len());
                     assert!(ret == true);

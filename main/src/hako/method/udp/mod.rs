@@ -44,13 +44,16 @@ pub fn activate_server(ip_port: &String)
                     let channel_id = i32::from_le_bytes(buf_ch);
                     let pdu_size = i32::from_le_bytes(buf_sz);
                     let name_len = i32::from_le_bytes(buf_nl);
+                    //println!("robo name_len={}", name_len);
                     //12..12+namelen: roboname
                     let mut robo_name = String::new();
                     for i in 0..name_len as usize {
                         let index = i + 12;
+                        //println!("buf[{}]={}", index, buf[index]);
                         robo_name.push(buf[index] as char);
                     }
-                    robo_name.push('\0');
+                    //robo_name.push('\0'); deleted because panic...
+                    //println!("robo name={}", robo_name);
                     //12+namelen..bufsize: buffer
                     let head_off = 12 + name_len as usize;
                     let ret = write_asset_pub_pdu(robo_name, channel_id, &buf[head_off..], pdu_size as usize);

@@ -47,6 +47,7 @@ pub fn get_subscribers(v: &mut Vec<i32>)
 
 pub fn create_asset_sub_pdu(asset_name: String, robo_name: String, channel_id: i32, pdu_size: i32, udp_ip_port: String, method_type: String) -> bool
 {
+    println!("create_asset_sub_pdu");
     let real_id = api::asset_get_pdu_channel(robo_name.clone(), channel_id);
     let mut map = ASSET_SUB_PDU_CHANNELS.lock().unwrap();
     match map.get(&real_id) {
@@ -75,6 +76,7 @@ pub fn create_asset_sub_pdu(asset_name: String, robo_name: String, channel_id: i
 
 pub fn remove_asset_pub_pdu(robo_name: String, channel_id: i32)
 {
+    println!("remove_asset_pub_pdu");
     let real_id = api::asset_get_pdu_channel(robo_name, channel_id);
     let mut map = ASSET_PUB_PDU_CHANNELS.lock().unwrap();
     map.remove(&real_id);
@@ -82,6 +84,7 @@ pub fn remove_asset_pub_pdu(robo_name: String, channel_id: i32)
 
 pub fn remove_asset_sub_pdu(robo_name: String, channel_id: i32)
 {
+    println!("remove_asset_sub_pdu");
     let real_id = api::asset_get_pdu_channel(robo_name, channel_id);
     let mut map = ASSET_SUB_PDU_CHANNELS.lock().unwrap();
     map.remove(&real_id);
@@ -89,6 +92,7 @@ pub fn remove_asset_sub_pdu(robo_name: String, channel_id: i32)
 
 pub fn get_asset_sub_pdu_size(robo_name: String, channel_id: i32) -> i32
 {
+    println!("get_asset_sub_pdu_size");
     let real_id = api::asset_get_pdu_channel(robo_name, channel_id);
     let map = ASSET_SUB_PDU_CHANNELS.lock().unwrap();
     let size = match map.get(&real_id) {
@@ -99,16 +103,17 @@ pub fn get_asset_sub_pdu_size(robo_name: String, channel_id: i32) -> i32
 }
 pub fn get_asset_pub_pdu_channel_robo_name(real_id: i32) -> (i32, String)
 {
-    let map = ASSET_SUB_PDU_CHANNELS.lock().unwrap();
-    let _ = match map.get(&real_id) {
+    let map = ASSET_PUB_PDU_CHANNELS.lock().unwrap();
+    let ret = match map.get(&real_id) {
         Some(_n) => (_n.channel_id, _n.robo_name.clone()),
         None => (-1, String::new())
     };
-    (-1, String::new())
+    ret
 }
 
 pub fn create_asset_pub_pdu(asset_name: String, robo_name: String, channel_id: i32, pdu_size: i32, method_type: String) -> bool
 {
+    println!("create_asset_pub_pdu");
     let real_id = api::asset_get_pdu_channel(robo_name.clone(), channel_id);
     let mut map = ASSET_PUB_PDU_CHANNELS.lock().unwrap();
     match map.get(&real_id) {
@@ -133,6 +138,7 @@ pub fn create_asset_pub_pdu(asset_name: String, robo_name: String, channel_id: i
 pub fn write_asset_pub_pdu(robo_name: String, channel_id: i32, data: &[u8], size: usize) -> bool
 {
     let real_id = api::asset_get_pdu_channel(robo_name.clone(), channel_id);
+    //println!("write_asset_pub_pdu: robo_name={} channel_id={} real_id={}", robo_name.clone(), channel_id, real_id);
     let map = ASSET_PUB_PDU_CHANNELS.lock().unwrap();
     let pdu = map.get(&real_id).unwrap();
     api::asset_write_pdu(
