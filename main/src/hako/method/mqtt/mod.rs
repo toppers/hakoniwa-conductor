@@ -10,6 +10,7 @@ use std::{sync::Mutex};
 use crate::hako::pdu::ASSET_PUB_PDU_CHANNELS;
 use crate::hako::pdu::ASSET_SUB_PDU_CHANNELS;
 use crate::hako::pdu::write_asset_pub_pdu;
+use crate::hako::pdu::get_asset_pub_pdu_channel_robo_name;
 static mut MQTT_SERVER_ACTIVATED: bool = false;
 use libc::c_char;
 use crate::hako::api;
@@ -62,7 +63,7 @@ fn create_topics(topics: &mut Vec<String>, qoss: &mut Vec<i32>)
     //for channel_id in 0..4 {
         println!("create topic: channel_id={} method_type={}", channel_id, pdu.method_type);
         if pdu.method_type == "MQTT" {
-            let combined = format!("hako_mqtt_{}", channel_id);
+            let combined = format!("hako_mqtt_{}_{}", pdu.robo_name, channel_id);
             println!("create topic: {}", combined.clone());
             topics.push(combined);
             qoss.push(1);
@@ -73,12 +74,12 @@ fn create_topics(topics: &mut Vec<String>, qoss: &mut Vec<i32>)
 fn get_channel_id(topic: String) -> i32
 {
     let mut map = ASSET_PUB_PDU_CHANNELS.lock().unwrap();
-    for (channel_id, pdu) in map.iter_mut() {
+    for (real_id, pdu) in map.iter_mut() {
     //for channel_id in 0..4 {
         if pdu.method_type == "MQTT" {
-            let combined = format!("hako_mqtt_{}", channel_id);
+            let combined = format!("hako_mqtt_{}_{}", pdu.robo_name, pdu.channel_id);
             if topic == combined {
-                return channel_id.clone();
+                return real_id.clone();
             }
         }
     }
@@ -145,10 +146,11 @@ pub fn activate_server()
             while let Some(msg_opt) = strm.next().await {
                 if let Some(msg) = msg_opt {
                     //println!("{}", msg);
-                    let channel_id = get_channel_id(msg.topic().to_string());
-                    assert!(channel_id >= 0);
+                    let real_id = get_channel_id(msg.topic().to_string());
+                    assert!(real_id >= 0);
                     //println!("write_asset_pub_pdu: channel_id={} size={}", channel_id, msg.payload().len());
-                    let ret = write_asset_pub_pdu(channel_id, msg.payload(), msg.payload().len());
+                    let (channel_id, robo_name) = get_asset_pub_pdu_channel_robo_name(real_id);
+                    let ret = write_asset_pub_pdu(robo_name, channel_id, msg.payload(), msg.payload().len());
                     assert!(ret == true);
                 }
                 else {
@@ -196,7 +198,7 @@ pub fn publish_mqtt_topics(cli: &mqtt::Client)
 {
     //println!("publish_mqtt_topics(): start");
     let mut map = ASSET_SUB_PDU_CHANNELS.lock().unwrap();
-    for (channel_id, pdu) in map.iter_mut() {
+    for (_real_id, pdu) in map.iter_mut() {
         if pdu.method_type == "MQTT" {
             assert!(pdu.pdu_size < 4096);
             //println!("publish_mqtt_topics(): send channel_id={}", channel_id);
@@ -204,11 +206,11 @@ pub fn publish_mqtt_topics(cli: &mqtt::Client)
             let result = api::asset_read_pdu(
                 pdu.asset_name.as_ptr() as *const c_char, 
                 pdu.robo_name.as_ptr() as *const c_char, 
-                channel_id.clone(), 
+                pdu.channel_id, 
                 buf.as_mut_ptr() as *mut i8, 
                 pdu.pdu_size as i32);
             if result {
-                let topic = format!("hako_mqtt_{}", channel_id);
+                let topic = format!("hako_mqtt_{}_{}", pdu.robo_name.clone(), pdu.channel_id);
                 let msg = mqtt::Message::new(topic, buf, mqtt::QOS_1);
                 if let Err(e) = cli.publish(msg) {
                     println!("Error sending message: {:?}", e);

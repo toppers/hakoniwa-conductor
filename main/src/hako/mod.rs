@@ -8,9 +8,9 @@ pub fn asset_create_pdu_channel(asset_name: String, robo_name: String, channel_i
     if result == false {
         return false;
     }
-    let result = api::asset_create_pdu_lchannel(robo_name, channel_id, pdu_size);
+    let result = api::asset_create_pdu_lchannel(robo_name.clone(), channel_id, pdu_size);
     if result == false {
-        pdu::remove_asset_pub_pdu(channel_id);
+        pdu::remove_asset_pub_pdu(robo_name, channel_id);
         return false;
     }
     else {

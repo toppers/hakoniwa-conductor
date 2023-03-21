@@ -32,16 +32,27 @@ pub fn activate_server(ip_port: &String)
                   else {
                     //0..3: channel id
                     //4..7: bufsize
+                    //8..12: namelen
                     let mut buf_ch = [0;4];
                     let mut buf_sz = [0;4];
+                    let mut buf_nl = [0;4];
                     for i in 0..4 {
                         buf_ch[i] = buf[i];
                         buf_sz[i] = buf[i + 4];
+                        buf_nl[i] = buf[i + 8];
                     }
                     let channel_id = i32::from_le_bytes(buf_ch);
                     let pdu_size = i32::from_le_bytes(buf_sz);
-                    //8..bufsize: buffer
-                    let ret = write_asset_pub_pdu(channel_id, &buf[8..], pdu_size as usize);
+                    let name_len = i32::from_le_bytes(buf_nl);
+                    //12..12+namelen: roboname
+                    let mut robo_name = String::new();
+                    for i in 0..name_len as usize {
+                        let index = i + 12;
+                        robo_name.push(buf[index] as char);
+                    }
+                    robo_name.push('\0');
+                    //12+namelen..bufsize: buffer
+                    let ret = write_asset_pub_pdu(robo_name, channel_id, &buf[8..], pdu_size as usize);
                     assert!(ret == true);
                   }
                 },
@@ -63,16 +74,16 @@ pub fn send_all_subscriber(socket: &UdpSocket)
 {
     let mut buf: [u8; ASSET_PACKET_MAX_SIZE] = [0; ASSET_PACKET_MAX_SIZE];
     let mut map = ASSET_SUB_PDU_CHANNELS.lock().unwrap();
-    for (channel_id, pdu) in map.iter_mut() {
+    for (_real_id, pdu) in map.iter_mut() {
         if pdu.method_type == "UDP" {
             let result = api::asset_read_pdu(
                 pdu.asset_name.as_ptr() as *const c_char, 
                 pdu.robo_name.as_ptr() as *const c_char, 
-                channel_id.clone(), 
+                pdu.channel_id, 
                 buf.as_mut_ptr() as *mut c_char, 
                 pdu.pdu_size as i32);
             if result {
-                send_one_subscriber(socket, pdu, channel_id.clone(), &buf, pdu.pdu_size as usize);
+                send_one_subscriber(socket, pdu, pdu.channel_id, &buf, pdu.pdu_size as usize);
             }    
         }
     }
@@ -81,20 +92,28 @@ pub fn send_all_subscriber(socket: &UdpSocket)
 
 fn send_one_subscriber(socket: &UdpSocket, pdu: &mut AssetSubPduType, channel_id: i32, data: &[u8], size: usize)
 {
+    let name_len = pdu.robo_name.len();
     //let mut map = ASSET_SUB_PDU_CHANNELS.lock().unwrap();
     //let pdu: &mut AssetSubPduType = map.get_mut(&channel_id).unwrap();
     //0..3: channel id
     //4..7: bufsize
+    //8..12: namelen
+    //12..12+namelen: roboname
     let buf_ch = i32::to_le_bytes(channel_id);
     let buf_sz = i32::to_le_bytes(size as i32);
-
+    let buf_nl = i32::to_le_bytes(name_len as i32);
     let buf = pdu.buffer.as_mut_slice();
     for i in 0..4 {
         buf[i] = buf_ch[i as usize];
         buf[i + 4] = buf_sz[i as usize];
+        buf[i + 8] = buf_nl[i as usize];
     }
+    for i in 0..name_len {
+        buf[i + 12] = pdu.robo_name.as_bytes()[i];
+    }
+    let off = 12 + name_len;
     for i in 0..size {
-        buf[i + 8] = data[i];
+        buf[i + off] = data[i];
     }
     
     socket.send_to(&pdu.buffer, pdu.options.udp_ip_port.clone()).expect("couldn't send data");
