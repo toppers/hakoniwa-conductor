@@ -10,6 +10,7 @@ pub const ASSET_PACKET_MAX_SIZE: usize = 4096;
 
 pub struct AssetPubPduType {
     pub asset_name: String,
+    pub robo_name: String,
     pub pdu_size: i32,
     pub method_type: String
 }
@@ -18,6 +19,7 @@ pub struct AsssetSubPduOptionType {
 }
 pub struct AssetSubPduType {
     pub asset_name: String,
+    pub robo_name: String,
     pub pdu_size: i32,
     pub buffer: [u8; ASSET_PACKET_MAX_SIZE],
     pub method_type: String,
@@ -41,7 +43,7 @@ pub fn get_subscribers(v: &mut Vec<i32>)
     }
 }
 
-pub fn create_asset_sub_pdu(asset_name: String, channel_id: i32, pdu_size: i32, udp_ip_port: String, method_type: String) -> bool
+pub fn create_asset_sub_pdu(asset_name: String, robo_name: String, channel_id: i32, pdu_size: i32, udp_ip_port: String, method_type: String) -> bool
 {
     let mut map = ASSET_SUB_PDU_CHANNELS.lock().unwrap();
     match map.get(&channel_id) {
@@ -51,6 +53,7 @@ pub fn create_asset_sub_pdu(asset_name: String, channel_id: i32, pdu_size: i32, 
         None => {
             let pdu = AssetSubPduType {
                 asset_name: asset_name,
+                robo_name: robo_name,
                 options: { 
                     AsssetSubPduOptionType {
                         udp_ip_port: udp_ip_port,
@@ -83,7 +86,7 @@ pub fn get_asset_sub_pdu_size(channel_id: i32) -> i32
 }
 
 
-pub fn create_asset_pub_pdu(asset_name: String, channel_id: i32, pdu_size: i32, method_type: String) -> bool
+pub fn create_asset_pub_pdu(asset_name: String, robo_name: String, channel_id: i32, pdu_size: i32, method_type: String) -> bool
 {
     let mut map = ASSET_PUB_PDU_CHANNELS.lock().unwrap();
     match map.get(&channel_id) {
@@ -93,6 +96,7 @@ pub fn create_asset_pub_pdu(asset_name: String, channel_id: i32, pdu_size: i32, 
         None => {
             let pdu = AssetPubPduType {
                 asset_name: asset_name,
+                robo_name: robo_name,
                 pdu_size: pdu_size,
                 method_type: method_type
             };
@@ -124,6 +128,7 @@ pub fn write_asset_pub_pdu(channel_id: i32, data: &[u8], size: usize) -> bool
     let pdu = map.get(&channel_id).unwrap();
     api::asset_write_pdu(
         pdu.asset_name.as_ptr() as *const c_char, 
+        pdu.robo_name.as_ptr() as *const c_char, 
         channel_id.clone(), 
         data.as_ptr() as *const c_char, 
         size as i32)

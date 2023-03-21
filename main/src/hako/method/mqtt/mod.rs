@@ -203,6 +203,7 @@ pub fn publish_mqtt_topics(cli: &mqtt::Client)
             let mut buf : Box<[u8]> = Box::new([0; 4096]);
             let result = api::asset_read_pdu(
                 pdu.asset_name.as_ptr() as *const c_char, 
+                pdu.robo_name.as_ptr() as *const c_char, 
                 channel_id.clone(), 
                 buf.as_mut_ptr() as *mut i8, 
                 pdu.pdu_size as i32);
