@@ -1,3 +1,3 @@
 [submodule "main/hakoniwa-core-spec"]
-	path = main/hakoniwa-core-spec
+	path = main/spec
 	url = https://github.com/toppers/hakoniwa-core-spec.git
