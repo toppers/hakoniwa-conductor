@@ -36,7 +36,12 @@ jobs:
         run: |
           sudo wget https://github.com/toppers/hakoniwa-core-cpp-client/releases/download/v1.0.2/libshakoc.so -P /usr/local/lib/hakoniwa/
           sudo apt-get update
-          sudo apt-get install -y libc++-dev libc++abi-dev libpython3-dev
+          sudo apt-get install -y libc++-dev libc++abi-dev
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
       - name: Download hakoniwa-core-cpp for Mac(intell)
         if:  " (runner.os == 'macOS')"
