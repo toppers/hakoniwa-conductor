@@ -313,10 +313,10 @@ impl CoreService for HakoCoreService {
         hako::api::asset_notify_simtime(asset_info.name.clone(), req.asset_time);
 
         if req.is_read_pdu_done {
-            hako::api::asset_notify_read_pdu_done(asset_info.name.clone().as_ptr() as *const i8);
+            hako::api::asset_notify_read_pdu_done(asset_info.name.clone());
         }
         if req.is_write_pdu_done {
-            hako::api::asset_notify_write_pdu_done(asset_info.name.clone().as_ptr() as *const i8);
+            hako::api::asset_notify_write_pdu_done(asset_info.name.clone());
         }
 
         let master_time: i64 = hako::api::asset_get_worldtime();
@@ -325,7 +325,7 @@ impl CoreService for HakoCoreService {
             ercd: ErrorCode::Ok as i32,
             master_time: master_time as i64,
             is_pdu_created: hako::api::asset_is_pdu_created(),
-            is_pdu_sync_mode: hako::api::asset_is_pdu_sync_mode(asset_info.name.clone().as_ptr() as *const i8),
+            is_pdu_sync_mode: hako::api::asset_is_pdu_sync_mode(asset_info.name.clone()),
             is_simulation_mode: hako::api::asset_is_simulation_mode(),
             status: get_status() as i32
         };
