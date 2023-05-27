@@ -56,8 +56,8 @@ pub fn create_asset_sub_pdu(asset_name: String, robo_name: String, channel_id: i
         },
         None => {
             let pdu = AssetSubPduType {
-                asset_name: asset_name,
-                robo_name: robo_name,
+                asset_name: asset_name.clone(),
+                robo_name: robo_name.clone(),
                 options: { 
                     AsssetSubPduOptionType {
                         udp_ip_port: udp_ip_port,
@@ -122,8 +122,8 @@ pub fn create_asset_pub_pdu(asset_name: String, robo_name: String, channel_id: i
         },
         None => {
             let pdu = AssetPubPduType {
-                asset_name: asset_name,
-                robo_name: robo_name,
+                asset_name: asset_name.clone(),
+                robo_name: robo_name.clone(),
                 pdu_size: pdu_size,
                 method_type: method_type,
                 channel_id: channel_id
