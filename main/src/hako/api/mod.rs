@@ -214,45 +214,63 @@ pub fn asset_get_pdu_channel(robo_name: String, channel_id: i32) -> i32
         hako_asset_get_pdu_channel(c_string_ptr, channel_id)
     }
 }
-pub fn asset_is_pdu_dirty(asset_name: *const c_char, robo_name: *const c_char, channel_id: i32) -> bool
+pub fn asset_is_pdu_dirty(asset_name: String, robo_name: String, channel_id: i32) -> bool
 {
     unsafe {
-        hako_asset_is_pdu_dirty(asset_name, robo_name, channel_id)
+        let asset_c_string: CString = CString::new(asset_name).unwrap();
+        let asset_c_string_ptr: *const c_char = asset_c_string.as_ptr();
+        let robo_c_string: CString = CString::new(robo_name).unwrap();
+        let robo_c_string_ptr: *const c_char = robo_c_string.as_ptr();
+        hako_asset_is_pdu_dirty(asset_c_string_ptr, robo_c_string_ptr, channel_id)
     }
 }
 
-pub fn asset_write_pdu(asset_name: *const c_char, robo_name: *const c_char, channel_id: i32, pdu_data: *const c_char, len: i32) -> bool
+pub fn asset_write_pdu(asset_name: String, robo_name: String, channel_id: i32, pdu_data: *const c_char, len: i32) -> bool
 {
     unsafe {
-        hako_asset_write_pdu(asset_name, robo_name, channel_id, pdu_data, len)
+        let asset_c_string: CString = CString::new(asset_name).unwrap();
+        let asset_c_string_ptr: *const c_char = asset_c_string.as_ptr();
+        let robo_c_string: CString = CString::new(robo_name).unwrap();
+        let robo_c_string_ptr: *const c_char = robo_c_string.as_ptr();
+        hako_asset_write_pdu(asset_c_string_ptr, robo_c_string_ptr, channel_id, pdu_data, len)
     }
 }
 
-pub fn asset_read_pdu(asset_name: *const c_char, robo_name: *const c_char, channel_id: i32, pdu_data: *mut c_char, len: i32) -> bool
+pub fn asset_read_pdu(asset_name: String, robo_name: String, channel_id: i32, pdu_data: *mut c_char, len: i32) -> bool
 {
     unsafe {
-        hako_asset_read_pdu(asset_name, robo_name, channel_id, pdu_data, len)
+        let asset_c_string: CString = CString::new(asset_name).unwrap();
+        let asset_c_string_ptr: *const c_char = asset_c_string.as_ptr();
+        let robo_c_string: CString = CString::new(robo_name).unwrap();
+        let robo_c_string_ptr: *const c_char = robo_c_string.as_ptr();
+        hako_asset_read_pdu(asset_c_string_ptr, robo_c_string_ptr, channel_id, pdu_data, len)
     }
 }
 
-pub fn asset_notify_read_pdu_done(asset_name: *const c_char) -> bool
+pub fn asset_notify_read_pdu_done(asset_name: String) -> bool
 {
     unsafe {
-        hako_asset_notify_read_pdu_done(asset_name)
+        let asset_c_string: CString = CString::new(asset_name).unwrap();
+        let asset_c_string_ptr: *const c_char = asset_c_string.as_ptr();
+        hako_asset_notify_read_pdu_done(asset_c_string_ptr)
     }
 }
 
-pub fn asset_notify_write_pdu_done(asset_name: *const c_char) -> bool
+pub fn asset_notify_write_pdu_done(asset_name: String) -> bool
 {
     unsafe {
-        hako_asset_notify_write_pdu_done(asset_name)        
+        let asset_c_string: CString = CString::new(asset_name).unwrap();
+        let asset_c_string_ptr: *const c_char = asset_c_string.as_ptr();
+        hako_asset_notify_write_pdu_done(asset_c_string_ptr)        
     }
 }
 
-pub fn asset_is_pdu_sync_mode(asset_name: *const c_char) -> bool
+pub fn asset_is_pdu_sync_mode(asset_name: String) -> bool
 {
     unsafe {
-        hako_asset_is_pdu_sync_mode(asset_name)        
+        let asset_c_string: CString = CString::new(asset_name).unwrap();
+        let asset_c_string_ptr: *const c_char = asset_c_string.as_ptr();
+        hako_asset_is_pdu_sync_mode(asset_c_string_ptr)        
     }
 }
 
