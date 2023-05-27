@@ -204,8 +204,8 @@ pub fn publish_mqtt_topics(cli: &mqtt::Client)
             //println!("publish_mqtt_topics(): send channel_id={}", channel_id);
             let mut buf : Box<[u8]> = Box::new([0; 4096]);
             let result = api::asset_read_pdu(
-                pdu.asset_name.as_ptr() as *const c_char, 
-                pdu.robo_name.as_ptr() as *const c_char, 
+                pdu.asset_name.clone().as_ptr() as *const c_char, 
+                pdu.robo_name.clone().as_ptr() as *const c_char, 
                 pdu.channel_id, 
                 buf.as_mut_ptr() as *mut i8, 
                 pdu.pdu_size as i32);

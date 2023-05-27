@@ -81,8 +81,8 @@ pub fn send_all_subscriber(socket: &UdpSocket)
     for (_real_id, pdu) in map.iter_mut() {
         if pdu.method_type == "UDP" {
             let result = api::asset_read_pdu(
-                pdu.asset_name.as_ptr() as *const c_char, 
-                pdu.robo_name.as_ptr() as *const c_char, 
+                pdu.asset_name.clone().as_ptr() as *const c_char, 
+                pdu.robo_name.clone().as_ptr() as *const c_char, 
                 pdu.channel_id, 
                 buf.as_mut_ptr() as *mut c_char, 
                 pdu.pdu_size as i32);
