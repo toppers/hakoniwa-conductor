@@ -206,7 +206,7 @@ pub fn publish_mqtt_topics(cli: &mqtt::Client)
                 pdu.asset_name.clone(), 
                 pdu.robo_name.clone(), 
                 pdu.channel_id, 
-                buf.as_mut_ptr() as *mut i8, 
+                buf.as_mut_ptr() as *mut u8,
                 pdu.pdu_size as i32);
             if result {
                 let topic = format!("hako_mqtt_{}_{}", pdu.robo_name.clone(), pdu.channel_id);
