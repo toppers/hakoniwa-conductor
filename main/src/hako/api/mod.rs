@@ -29,10 +29,10 @@ extern "C" {
     fn hako_asset_get_pdu_channel(robo_name: *const c_char, channel_id: i32) -> i32;
     fn hako_asset_is_pdu_dirty(asset_name: *const c_char, robo_name: *const c_char, channel_id: i32) -> bool;
     fn hako_asset_write_pdu(asset_name: *const c_char, robo_name: *const c_char, channel_id: i32, pdu_data: *const c_char, len: i32) -> bool;
-    fn hako_asset_read_pdu(asset_name: *const c_char, robo_name: *const c_char, channel_id: i32, pdu_data: *mut c_char, len: i32) -> bool;
-    fn hako_asset_notify_read_pdu_done(asset_name: *const c_char) -> bool;
-    fn hako_asset_notify_write_pdu_done(asset_name: *const c_char) -> bool;
-    fn hako_asset_is_pdu_sync_mode(asset_name: *const c_char) -> bool;
+    fn hako_asset_read_pdu(asset_name: *const c_char, robo_name: *const c_char, channel_id: i32, pdu_data: *mut u8, len: i32) -> bool;
+    fn hako_asset_notify_read_pdu_done(asset_name: *const u8) -> bool;
+    fn hako_asset_notify_write_pdu_done(asset_name: *const u8) -> bool;
+    fn hako_asset_is_pdu_sync_mode(asset_name: *const u8) -> bool;
     fn hako_asset_is_simulation_mode() -> bool;
     fn hako_asset_is_pdu_created() -> bool;
 
@@ -235,21 +235,21 @@ pub fn asset_read_pdu(asset_name: *const c_char, robo_name: *const c_char, chann
     }
 }
 
-pub fn asset_notify_read_pdu_done(asset_name: *const c_char) -> bool
+pub fn asset_notify_read_pdu_done(asset_name: *const u8) -> bool
 {
     unsafe {
         hako_asset_notify_read_pdu_done(asset_name)
     }
 }
 
-pub fn asset_notify_write_pdu_done(asset_name: *const c_char) -> bool
+pub fn asset_notify_write_pdu_done(asset_name: *const u8) -> bool
 {
     unsafe {
         hako_asset_notify_write_pdu_done(asset_name)        
     }
 }
 
-pub fn asset_is_pdu_sync_mode(asset_name: *const c_char) -> bool
+pub fn asset_is_pdu_sync_mode(asset_name: *const u8) -> bool
 {
     unsafe {
         hako_asset_is_pdu_sync_mode(asset_name)        

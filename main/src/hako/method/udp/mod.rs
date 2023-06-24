@@ -84,7 +84,7 @@ pub fn send_all_subscriber(socket: &UdpSocket)
                 pdu.asset_name.as_ptr() as *const c_char, 
                 pdu.robo_name.as_ptr() as *const c_char, 
                 pdu.channel_id, 
-                buf.as_mut_ptr() as *mut c_char, 
+                buf.as_mut_ptr() as *mut u8, 
                 pdu.pdu_size as i32);
             if result {
                 send_one_subscriber(socket, pdu, pdu.channel_id, &buf, pdu.pdu_size as usize);
