@@ -228,7 +228,7 @@ pub fn asset_write_pdu(asset_name: *const c_char, robo_name: *const c_char, chan
     }
 }
 
-pub fn asset_read_pdu(asset_name: *const c_char, robo_name: *const c_char, channel_id: i32, pdu_data: *mut c_char, len: i32) -> bool
+pub fn asset_read_pdu(asset_name: *const c_char, robo_name: *const c_char, channel_id: i32, pdu_data: *mut u8, len: i32) -> bool
 {
     unsafe {
         hako_asset_read_pdu(asset_name, robo_name, channel_id, pdu_data, len)
