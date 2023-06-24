@@ -4,7 +4,6 @@ extern crate once_cell;
 use std::net::UdpSocket;
 use std::str;
 use crate::hako::api;
-use libc::c_char;
 
 static mut PDU_SERVER_PORT: i32 = -1;
 const ASSET_RECV_PACKET_MAX_SIZE: usize = 1024 * 1024;
