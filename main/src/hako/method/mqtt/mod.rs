@@ -12,7 +12,6 @@ use crate::hako::pdu::ASSET_SUB_PDU_CHANNELS;
 use crate::hako::pdu::write_asset_pub_pdu;
 use crate::hako::pdu::get_asset_pub_pdu_channel_robo_name;
 static mut MQTT_SERVER_ACTIVATED: bool = false;
-use libc::c_char;
 use crate::hako::api;
 
 struct MqttOptions {
@@ -204,8 +203,8 @@ pub fn publish_mqtt_topics(cli: &mqtt::Client)
             //println!("publish_mqtt_topics(): send channel_id={}", channel_id);
             let mut buf : Box<[u8]> = Box::new([0; 4096]);
             let result = api::asset_read_pdu(
-                pdu.asset_name.as_ptr() as *const c_char, 
-                pdu.robo_name.as_ptr() as *const c_char, 
+                pdu.asset_name.clone(), 
+                pdu.robo_name.clone(), 
                 pdu.channel_id, 
                 buf.as_mut_ptr() as *mut u8,
                 pdu.pdu_size as i32);
