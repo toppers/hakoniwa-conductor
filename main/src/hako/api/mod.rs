@@ -251,7 +251,7 @@ pub fn asset_notify_read_pdu_done(asset_name: String) -> bool
 {
     unsafe {
         let asset_c_string: CString = CString::new(asset_name).unwrap();
-        let asset_c_string_ptr: *const i8 = asset_c_string.as_ptr();
+        let asset_c_string_ptr: *const i8 = asset_c_string.as_ptr() as *const i8;
         hako_asset_notify_read_pdu_done(asset_c_string_ptr)
     }
 }
@@ -260,7 +260,7 @@ pub fn asset_notify_write_pdu_done(asset_name: String) -> bool
 {
     unsafe {
         let asset_c_string: CString = CString::new(asset_name).unwrap();
-        let asset_c_string_ptr: *const i8 = asset_c_string.as_ptr();
+        let asset_c_string_ptr: *const i8 = asset_c_string.as_ptr() as *const i8;
         hako_asset_notify_write_pdu_done(asset_c_string_ptr)        
     }
 }
@@ -269,7 +269,7 @@ pub fn asset_is_pdu_sync_mode(asset_name: String) -> bool
 {
     unsafe {
         let asset_c_string: CString = CString::new(asset_name).unwrap();
-        let asset_c_string_ptr: *const i8 = asset_c_string.as_ptr();
+        let asset_c_string_ptr: *const i8 = asset_c_string.as_ptr() as *const i8;
         hako_asset_is_pdu_sync_mode(asset_c_string_ptr)        
     }
 }
