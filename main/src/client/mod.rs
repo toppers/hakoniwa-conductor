@@ -18,3 +18,13 @@ use hakoniwa::{
     CreatePduChannelRequest, CreatePduChannelReply,
     SubscribePduChannelRequest, SubscribePduChannelReply
 };
+
+pub async fn start_service(ip_port: &String) -> Result<(), Box<dyn std::error::Error>>
+{
+    //TODO
+    //TODO create channel
+    //TODO register asset
+    //TODO monitor event
+        //TODO wait start, reset, ...etc..
+    Ok(())
+}
