@@ -30,6 +30,13 @@ pub async fn start_service(ip: &String, port: &String) -> Result<(), Box<dyn std
     let mut client = CoreServiceClient::new(channel);
 
     // Create an AssetInfo message
+    //TODO
+    //0. server向けには、自分のアセット名で、登録する
+    //1. 自分のアセット名は、外部定義ファイルから取得する。
+    //2. 全SUBSCRチャネルは、外部定義ファイルから取得する。
+    //3. 全CREATEチャネルは、外部定義ファイルから取得する。
+    //4. 全CREATEチャネルを登録する(publishチャネル)
+    //4. 全SUBSCRチャネルを登録する(subscribeチャネル)
     let asset_info = AssetInfo {
         name: "SampleAsset".to_string(),
     };
