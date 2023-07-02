@@ -1,27 +1,43 @@
-use tonic::{ transport::Server, Request, Response, Status};
-use tokio::sync::mpsc;
-use tokio_stream::wrappers::ReceiverStream;
+//use tonic::{ transport::Server, Request, Response, Status};
+//use tokio::sync::mpsc;
+//use tokio_stream::wrappers::ReceiverStream;
 use tonic::transport::{Endpoint, Uri};
+use crate::loader::{
+    ConductorConfig, 
+    RobotConfig,
+    load_robot_config,
+    show_robot_config
+};
 
 pub mod hakoniwa {
     tonic::include_proto!("hakoniwa");
 }
-use crate::hako;
+//use crate::hako;
 
 use hakoniwa::{
     core_service_client:: { CoreServiceClient },
-    ErrorCode, AssetInfo, NormalReply,
-    AssetInfoList, SimStatReply, SimulationStatus,
-    SimulationTimeSyncOutputFile,
-    AssetNotification, AssetNotificationReply,
-    AssetNotificationEvent,
-    NotifySimtimeRequest, NotifySimtimeReply,
-    CreatePduChannelRequest, CreatePduChannelReply,
-    SubscribePduChannelRequest, SubscribePduChannelReply
+    AssetInfo,
+    //ErrorCode, , NormalReply,
+    //AssetInfoList, SimStatReply, 
+    //SimulationStatus,
+    //SimulationTimeSyncOutputFile,
+    //AssetNotification, 
+    //AssetNotificationReply,
+    //AssetNotificationEvent,
+    //NotifySimtimeRequest, NotifySimtimeReply,
+    //CreatePduChannelRequest, CreatePduChannelReply,
+    //SubscribePduChannelRequest, SubscribePduChannelReply
 };
-pub async fn start_service(ip: &String, port: &String) -> Result<(), Box<dyn std::error::Error>> 
+pub async fn start_service(conductor_config: ConductorConfig, robot_config_path: &String) -> Result<(), Box<dyn std::error::Error>> 
 {
-    let uri = format!("http://{}:{}", ip, port).parse::<Uri>()?;
+    match load_robot_config(&robot_config_path) {
+        Ok(config) => show_robot_config(&config),
+        Err(err) => {
+            eprintln!("Failed to load data: {:?}", err);
+            std::process::exit(1);
+        }
+    }
+    let uri = format!("http://{}:{}", conductor_config.core_ipaddr, conductor_config.core_portno).parse::<Uri>()?;
     let endpoint = Endpoint::from(uri);
     let channel = endpoint.connect().await?;
 
@@ -38,7 +54,7 @@ pub async fn start_service(ip: &String, port: &String) -> Result<(), Box<dyn std
     //4. 全CREATEチャネルを登録する(publishチャネル)
     //4. 全SUBSCRチャネルを登録する(subscribeチャネル)
     let asset_info = AssetInfo {
-        name: "SampleAsset".to_string(),
+        name: conductor_config.asset_name,
     };
 
     // Send the register request
