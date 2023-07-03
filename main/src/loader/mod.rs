@@ -3,38 +3,38 @@ use std::fs::File;
 use std::io::Read;
 
 #[derive(Debug, Deserialize)]
-struct RpcPduReader {
+pub struct RpcPduReader {
     #[serde(rename = "type")]
-    pdu_type: String,
-    org_name: String,
-    name: String,
-    channel_id: u32,
-    pdu_size: u32,
-    method_type: String,
+    pub pdu_type: String,
+    pub org_name: String,
+    pub name: String,
+    pub channel_id: u32,
+    pub pdu_size: u32,
+    pub method_type: String,
 }
 
 #[derive(Debug, Deserialize)]
-struct RpcPduWriter {
+pub struct RpcPduWriter {
     #[serde(rename = "type")]
-    pdu_type: String,
-    org_name: String,
-    name: String,
-    channel_id: u32,
-    pdu_size: u32,
-    write_cycle: u32,
-    method_type: String,
+    pub pdu_type: String,
+    pub org_name: String,
+    pub name: String,
+    pub channel_id: u32,
+    pub pdu_size: u32,
+    pub write_cycle: u32,
+    pub method_type: String,
 }
 #[derive(Debug, Deserialize)]
-struct Robot {
-    name: String,
-    rpc_pdu_readers: Vec<RpcPduReader>,
-    rpc_pdu_writers: Vec<RpcPduWriter>,
+pub struct Robot {
+    pub name: String,
+    pub rpc_pdu_readers: Vec<RpcPduReader>,
+    pub rpc_pdu_writers: Vec<RpcPduWriter>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct RobotConfig {
     #[serde(rename = "robots")]
-    robots: Vec<Robot>,
+    pub robots: Vec<Robot>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -44,8 +44,8 @@ pub struct ConductorConfig {
     pub core_portno: i32,
     pub delta_msec: i64,
     pub max_delay_msec: i64,
-    pub udp_server_port: i32,
-    pub udp_sender_port: i32,
+    pub udp_server_ip_port: String,
+    pub udp_sender_ip_port: String,
     pub mqtt_portno: i32
 }
 
@@ -97,8 +97,8 @@ pub fn show_conductor_config(conductor_config: &ConductorConfig)
     println!("Conductor core_portno: {}", conductor_config.core_portno);
     println!("Conductor delta_msec: {}", conductor_config.delta_msec);
     println!("Conductor max_delay_msec: {}", conductor_config.max_delay_msec);
-    println!("Conductor udp_server_port: {}", conductor_config.udp_server_port);
-    println!("Conductor udp_sender_port: {}", conductor_config.udp_sender_port);
+    println!("Conductor udp_server_port: {}", conductor_config.udp_server_ip_port);
+    println!("Conductor udp_sender_port: {}", conductor_config.udp_sender_ip_port);
     println!("Conductor mqtt_portno: {}", conductor_config.mqtt_portno);
     println!("-------------------");
 }
