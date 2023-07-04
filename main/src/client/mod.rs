@@ -12,7 +12,7 @@ use crate::{loader::{
 pub mod hakoniwa {
     tonic::include_proto!("hakoniwa");
 }
-//use crate::hako;
+use crate::hako;
 
 use hakoniwa::{
     core_service_client:: { CoreServiceClient },
@@ -99,7 +99,15 @@ async fn initialize_readers(client: &mut CoreServiceClient<tonic::transport::Cha
             if reply.ercd() != ErrorCode::Ok {
                 return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Can not SubscribePduChannel"))); 
             }
-            //TODO something
+            let result = hako::pdu::create_asset_pub_pdu(
+                conductor_config.asset_name.clone(), 
+                robot.name.clone(), 
+                reader.channel_id as i32, 
+                reader.pdu_size as i32, 
+                reader.method_type.clone());
+            if result == false {
+                return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Can not create_asset_sub_pdu"))); 
+            }
         }
     }
     Ok(())
@@ -109,8 +117,6 @@ async fn initialize_readers(client: &mut CoreServiceClient<tonic::transport::Cha
 async fn initialize_writers(client: &mut CoreServiceClient<tonic::transport::Channel>, conductor_config: &ConductorConfig, robot_config: &RobotConfig) -> Result<(), Box<dyn std::error::Error>> 
 {
     //TODO api::create_pdu_lchannel
-    //TODO rpc::create_pdu_channel
-
     for robot in &robot_config.robots {
         for writer in &robot.rpc_pdu_writers {
             let request = CreatePduChannelRequest {
@@ -127,7 +133,16 @@ async fn initialize_writers(client: &mut CoreServiceClient<tonic::transport::Cha
             if reply.ercd() != ErrorCode::Ok {
                 return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Can not CreatePduChannel"))); 
             }
-            //TODO something
+            let result = hako::pdu::create_asset_sub_pdu(
+                                conductor_config.asset_name.clone(), 
+                                robot.name.clone(), 
+                                writer.channel_id as i32, 
+                                writer.pdu_size as i32, 
+                                response.get_ref().port.to_string(), 
+                                writer.method_type.clone());
+            if result == false {
+                return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Can not create_asset_sub_pdu"))); 
+            }
         }
     }
     Ok(())
