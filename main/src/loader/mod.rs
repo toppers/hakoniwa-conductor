@@ -37,7 +37,7 @@ pub struct RobotConfig {
     pub robots: Vec<Robot>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct ConductorConfig {
     pub asset_name: String,
     pub core_ipaddr: String,

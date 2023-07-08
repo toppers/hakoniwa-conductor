@@ -5,6 +5,10 @@ use chan::chan_select;
 use std::net::UdpSocket;
 use paho_mqtt as mqtt;
 use crate::hako;
+extern crate lazy_static;
+extern crate once_cell;
+use std::{sync::Mutex};
+use once_cell::sync::Lazy;
 
 use tonic::transport::{Endpoint, Uri};
 use crate::{loader::{
@@ -32,6 +36,32 @@ use hakoniwa::{
     CreatePduChannelRequest, CreatePduChannelReply,
     SubscribePduChannelRequest, SubscribePduChannelReply
 };
+pub enum SimulationState {
+    Stopped,
+    Runnable,
+    Running,
+    Stopping,
+    Terminated,
+}
+
+pub struct ClientSimStatus {
+    pub master_time: i64,
+    pub state: SimulationState,
+    pub is_pdu_created: bool,
+    pub is_simulation_mode: bool,
+    pub is_pdu_sync_mode: bool,
+}
+
+pub static CLIENT_SIM_STATUS: Lazy<Mutex<ClientSimStatus>> = Lazy::new(|| {
+    Mutex::new(ClientSimStatus { 
+        master_time: 0,
+        state: SimulationState::Terminated,
+        is_pdu_created: false,
+        is_simulation_mode: false,
+        is_pdu_sync_mode: false
+    })
+});
+
 pub async fn start_service(conductor_config: ConductorConfig, robot_config_path: &String) -> Result<(), Box<dyn std::error::Error>> 
 {
     //TODO
@@ -65,12 +95,22 @@ pub async fn start_service(conductor_config: ConductorConfig, robot_config_path:
             show_robot_config(&config);
             initialize_readers(&mut client, &conductor_config, &config).await?;
             initialize_writers(&mut client, &conductor_config, &config).await?;
-        },
+        }
         Err(err) => {
             eprintln!("Failed to load data: {:?}", err);
             std::process::exit(1);
         }
     }
+    let future = {
+        let thread_conductor_config: ConductorConfig = conductor_config.clone();
+        event_monitor(thread_conductor_config)
+    };
+    tokio::spawn(async move {
+        if let Err(err) = future.await {
+            eprintln!("Error in event_monitor: {:?}", err);
+            std::process::exit(1);
+        }
+    });
     //CREATE UDP SOCKET
     let socket: Option<UdpSocket> = Some(hako::method::udp::create_publisher_udp_socket(&conductor_config.udp_sender_ip_port));
     hako::method::udp::activate_server(&conductor_config.udp_server_ip_port);
@@ -92,6 +132,7 @@ pub async fn start_service(conductor_config: ConductorConfig, robot_config_path:
                     std::process::exit(0);
                 },
                 do_something.recv() => {
+                    //TODO update status
                     if hako::api::master_execute() {
                         match socket {
                             Some(ref _n) => {
@@ -115,9 +156,36 @@ pub async fn start_service(conductor_config: ConductorConfig, robot_config_path:
             }
         }    
     });
-    //TODO START CLIENT SERVICE...
     Ok(())
 }
+
+async fn event_monitor(conductor_config: ConductorConfig) -> Result<(), Box<dyn std::error::Error>> 
+{
+    let uri = format!("http://{}:{}", conductor_config.core_ipaddr.clone(), conductor_config.core_portno.clone()).parse::<Uri>()?;
+    let endpoint = Endpoint::from(uri);
+    let channel = endpoint.connect().await?;
+
+    // Create a client using the channel
+    let mut client: CoreServiceClient<tonic::transport::Channel> = CoreServiceClient::new(channel);
+
+    // Create an AssetInfo message
+    let asset_info = AssetInfo {
+        name: conductor_config.asset_name.clone(),
+    };
+
+    let request = tonic::Request::new(asset_info);
+    let response = client.asset_notification_start(request).await?;
+
+    // ストリーミングレスポンスを受け取る
+    let mut stream = response.into_inner();
+    while let Some(notification) = stream.message().await? {
+        // 受信したAssetNotificationに対する処理を行う
+        // ...
+    }
+
+    Ok(())
+}
+
 
 async fn initialize_readers(client: &mut CoreServiceClient<tonic::transport::Channel>, conductor_config: &ConductorConfig, robot_config: &RobotConfig) -> Result<(), Box<dyn std::error::Error>> 
 {
