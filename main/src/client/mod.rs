@@ -28,10 +28,9 @@ use hakoniwa::{
     ErrorCode,
     //AssetInfoList, SimStatReply, 
     //SimulationStatus,
-    //SimulationTimeSyncOutputFile,
-    //AssetNotification, 
-    //AssetNotificationReply,
-    //AssetNotificationEvent,
+    AssetNotification, 
+    AssetNotificationReply,
+    AssetNotificationEvent,
     //NotifySimtimeRequest, NotifySimtimeReply,
     CreatePduChannelRequest, CreatePduChannelReply,
     SubscribePduChannelRequest, SubscribePduChannelReply
@@ -46,6 +45,7 @@ pub enum SimulationState {
 
 pub struct ClientSimStatus {
     pub master_time: i64,
+    pub event: AssetNotificationEvent,
     pub state: SimulationState,
     pub is_pdu_created: bool,
     pub is_simulation_mode: bool,
@@ -55,6 +55,7 @@ pub struct ClientSimStatus {
 pub static CLIENT_SIM_STATUS: Lazy<Mutex<ClientSimStatus>> = Lazy::new(|| {
     Mutex::new(ClientSimStatus { 
         master_time: 0,
+        event: AssetNotificationEvent::None,
         state: SimulationState::Terminated,
         is_pdu_created: false,
         is_simulation_mode: false,
@@ -178,12 +179,38 @@ async fn event_monitor(conductor_config: ConductorConfig) -> Result<(), Box<dyn 
 
     // ストリーミングレスポンスを受け取る
     let mut stream = response.into_inner();
-    while let Some(notification) = stream.message().await? {
-        // 受信したAssetNotificationに対する処理を行う
-        // ...
+    loop {
+        let notification: Option<AssetNotification> = stream.message().await?;
+        match notification  {
+            Some(notification) => {
+                match notification.event() {
+                    AssetNotificationEvent::Start => {
+                        let mut client_sim_status = CLIENT_SIM_STATUS.lock().unwrap();
+                        client_sim_status.event = AssetNotificationEvent::Start;
+                    }
+                    AssetNotificationEvent::Stop => {
+                        let mut client_sim_status = CLIENT_SIM_STATUS.lock().unwrap();
+                        client_sim_status.event = AssetNotificationEvent::Stop;
+                    }
+                    AssetNotificationEvent::Reset => {
+                        let mut client_sim_status = CLIENT_SIM_STATUS.lock().unwrap();
+                        client_sim_status.event = AssetNotificationEvent::Reset;
+                    }
+                    AssetNotificationEvent::Error => {
+                        let mut client_sim_status = CLIENT_SIM_STATUS.lock().unwrap();
+                        client_sim_status.event = AssetNotificationEvent::Error;
+                    }
+                    AssetNotificationEvent::Heartbeat => {
+                        /* nothing to do */
+                    }
+                    AssetNotificationEvent::None => {
+                        /* nothing to do */
+                    }
+                }
+            }
+            None => {}
+        }
     }
-
-    Ok(())
 }
 
 
