@@ -29,8 +29,7 @@ use crate::client::rpc_client::hakoniwa::{
 
 pub async fn start_service(conductor_config: ConductorConfig, robot_config_path: &String) -> Result<(), Box<dyn std::error::Error>> 
 {
-    //TODO
-    //hako::api::master_init(max_delay_usec, delta_usec);
+    hako::api::master_init(conductor_config.max_delay_msec * 1000, conductor_config.delta_msec * 1000);
     let mut client = rpc_client::create_client(&conductor_config.core_ipaddr.clone(), conductor_config.core_portno.clone()).await?;
     rpc_client::asset_register(&mut client, &conductor_config.asset_name).await?;
 
@@ -80,8 +79,7 @@ pub async fn start_service(conductor_config: ConductorConfig, robot_config_path:
                 if true {
                     match socket {
                         Some(ref _n) => {
-                            //TODO
-                            //hako::method::udp::send_all_subscriber(socket.as_ref().unwrap());
+                            hako::method::udp::send_all_subscriber(socket.as_ref().unwrap());
                         },
                         None => ()
                     }
@@ -104,7 +102,6 @@ pub async fn start_service(conductor_config: ConductorConfig, robot_config_path:
 
 async fn initialize_readers(client: &mut CoreServiceClient<tonic::transport::Channel>, conductor_config: &ConductorConfig, robot_config: &RobotConfig) -> Result<(), Box<dyn std::error::Error>> 
 {
-    //TODO api::create_pdu_lchannel
     for robot in &robot_config.robots {
         for reader in &robot.rpc_pdu_readers {
             let request = SubscribePduChannelRequest {
@@ -115,6 +112,11 @@ async fn initialize_readers(client: &mut CoreServiceClient<tonic::transport::Cha
                 method_type: reader.method_type.clone(),
                 robo_name: robot.name.clone()
             };
+            let ret = hako::api::asset_create_pdu_lchannel(robot.name.clone(), reader.channel_id as i32, reader.pdu_size as i32);
+            if ret == false {
+                return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "asset_create_pdu_lchannel error"))); 
+            }
+
             println!("Subscribe Pdu Channel Robot Name: {} Channel: {}", robot.name, reader.channel_id);
             let response = client.subscribe_pdu_channel(request).await?;
             let reply: &SubscribePduChannelReply = response.get_ref();
@@ -139,7 +141,6 @@ async fn initialize_readers(client: &mut CoreServiceClient<tonic::transport::Cha
 
 async fn initialize_writers(client: &mut CoreServiceClient<tonic::transport::Channel>, conductor_config: &ConductorConfig, robot_config: &RobotConfig) -> Result<(), Box<dyn std::error::Error>> 
 {
-    //TODO api::create_pdu_lchannel
     for robot in &robot_config.robots {
         for writer in &robot.rpc_pdu_writers {
             let request = CreatePduChannelRequest {
@@ -149,6 +150,10 @@ async fn initialize_writers(client: &mut CoreServiceClient<tonic::transport::Cha
                 method_type: writer.method_type.clone(),
                 robo_name: robot.name.clone()
             };
+            let ret = hako::api::asset_create_pdu_lchannel(robot.name.clone(), writer.channel_id as i32, writer.pdu_size as i32);
+            if ret == false {
+                return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "asset_create_pdu_lchannel error"))); 
+            }
             println!("Create Pdu Channel Robot Name: {} Channel: {}", robot.name, writer.channel_id);
             let response = client.create_pdu_channel(request).await?;
             let reply: &CreatePduChannelReply = response.get_ref();
