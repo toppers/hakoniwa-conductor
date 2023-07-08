@@ -7,89 +7,32 @@ use paho_mqtt as mqtt;
 use crate::hako;
 extern crate lazy_static;
 extern crate once_cell;
-use std::{sync::Mutex};
-use once_cell::sync::Lazy;
+pub mod rpc_client;
 
-use tonic::transport::{Endpoint, Uri};
 use crate::{loader::{
     ConductorConfig, 
     RobotConfig,
     load_robot_config,
     show_robot_config
-}, client::hakoniwa::NormalReply};
+}};
 
 pub mod hakoniwa {
     tonic::include_proto!("hakoniwa");
 }
+use crate::client::rpc_client::hakoniwa::core_service_client::CoreServiceClient;
 
-use hakoniwa::{
-    core_service_client:: { CoreServiceClient },
-    AssetInfo,
+use crate::client::rpc_client::hakoniwa::{
     ErrorCode,
-    //AssetInfoList, SimStatReply, 
-    //SimulationStatus,
-    AssetNotification, 
-    //AssetNotificationReply,
-    AssetNotificationEvent,
-    //NotifySimtimeRequest, NotifySimtimeReply,
     CreatePduChannelRequest, CreatePduChannelReply,
     SubscribePduChannelRequest, SubscribePduChannelReply
 };
-pub enum SimulationState {
-    Stopped,
-    Runnable,
-    Running,
-    Stopping,
-    Terminated,
-}
-
-pub struct ClientSimStatus {
-    pub master_time: i64,
-    pub event: AssetNotificationEvent,
-    pub state: SimulationState,
-    pub is_pdu_created: bool,
-    pub is_simulation_mode: bool,
-    pub is_pdu_sync_mode: bool,
-}
-
-pub static CLIENT_SIM_STATUS: Lazy<Mutex<ClientSimStatus>> = Lazy::new(|| {
-    Mutex::new(ClientSimStatus { 
-        master_time: 0,
-        event: AssetNotificationEvent::None,
-        state: SimulationState::Terminated,
-        is_pdu_created: false,
-        is_simulation_mode: false,
-        is_pdu_sync_mode: false
-    })
-});
 
 pub async fn start_service(conductor_config: ConductorConfig, robot_config_path: &String) -> Result<(), Box<dyn std::error::Error>> 
 {
     //TODO
     //hako::api::master_init(max_delay_usec, delta_usec);
-
-    let uri = format!("http://{}:{}", conductor_config.core_ipaddr.clone(), conductor_config.core_portno.clone()).parse::<Uri>()?;
-    let endpoint = Endpoint::from(uri);
-    let channel = endpoint.connect().await?;
-
-    // Create a client using the channel
-    let mut client: CoreServiceClient<tonic::transport::Channel> = CoreServiceClient::new(channel);
-
-    // Create an AssetInfo message
-    let asset_info = AssetInfo {
-        name: conductor_config.asset_name.clone(),
-    };
-
-    // Send the register request
-    let request = tonic::Request::new(asset_info);
-    let response = client.register(request).await?;
-
-    // Process the response
-    let reply: &NormalReply = response.get_ref();
-    println!("Register response: {:?}", reply);
-    if reply.ercd() != ErrorCode::Ok {
-        return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Can not register asset"))); 
-    }
+    let mut client = rpc_client::create_client(&conductor_config.core_ipaddr.clone(), conductor_config.core_portno.clone()).await?;
+    rpc_client::asset_register(&mut client, &conductor_config.asset_name).await?;
 
     match load_robot_config(&robot_config_path) {
         Ok(config) => { 
@@ -104,7 +47,7 @@ pub async fn start_service(conductor_config: ConductorConfig, robot_config_path:
     }
     let future = {
         let thread_conductor_config: ConductorConfig = conductor_config.clone();
-        event_monitor(thread_conductor_config)
+        rpc_client::event_monitor(thread_conductor_config.asset_name.clone(), thread_conductor_config.core_ipaddr, thread_conductor_config.core_portno.clone())
     };
     tokio::spawn(async move {
         if let Err(err) = future.await {
@@ -158,62 +101,6 @@ pub async fn start_service(conductor_config: ConductorConfig, robot_config_path:
         }
     }
 }
-
-async fn event_monitor(conductor_config: ConductorConfig) -> Result<(), Box<dyn std::error::Error>> 
-{
-    let uri = format!("http://{}:{}", conductor_config.core_ipaddr.clone(), conductor_config.core_portno.clone()).parse::<Uri>()?;
-    let endpoint = Endpoint::from(uri);
-    let channel = endpoint.connect().await?;
-
-    // Create a client using the channel
-    let mut client: CoreServiceClient<tonic::transport::Channel> = CoreServiceClient::new(channel);
-
-    // Create an AssetInfo message
-    let asset_info = AssetInfo {
-        name: conductor_config.asset_name.clone(),
-    };
-
-    let request = tonic::Request::new(asset_info);
-    let response = client.asset_notification_start(request).await?;
-
-    // ストリーミングレスポンスを受け取る
-    let mut stream = response.into_inner();
-    loop {
-        let notification: Option<AssetNotification> = stream.message().await?;
-        match notification  {
-            Some(notification) => {
-                match notification.event() {
-                    AssetNotificationEvent::Start => {
-                        let mut client_sim_status = CLIENT_SIM_STATUS.lock().unwrap();
-                        client_sim_status.event = AssetNotificationEvent::Start;
-                    }
-                    AssetNotificationEvent::Stop => {
-                        let mut client_sim_status = CLIENT_SIM_STATUS.lock().unwrap();
-                        client_sim_status.event = AssetNotificationEvent::Stop;
-                    }
-                    AssetNotificationEvent::Reset => {
-                        let mut client_sim_status = CLIENT_SIM_STATUS.lock().unwrap();
-                        client_sim_status.event = AssetNotificationEvent::Reset;
-                    }
-                    AssetNotificationEvent::Error => {
-                        let mut client_sim_status = CLIENT_SIM_STATUS.lock().unwrap();
-                        client_sim_status.event = AssetNotificationEvent::Error;
-                    }
-                    AssetNotificationEvent::Heartbeat => {
-                        /* nothing to do */
-                        println!("Heartbeat");
-                    }
-                    AssetNotificationEvent::None => {
-                        /* nothing to do */
-                        println!("NONE");
-                    }
-                }
-            }
-            None => {}
-        }
-    }
-}
-
 
 async fn initialize_readers(client: &mut CoreServiceClient<tonic::transport::Channel>, conductor_config: &ConductorConfig, robot_config: &RobotConfig) -> Result<(), Box<dyn std::error::Error>> 
 {
