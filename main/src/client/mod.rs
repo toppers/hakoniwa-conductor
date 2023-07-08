@@ -29,7 +29,7 @@ use hakoniwa::{
     //AssetInfoList, SimStatReply, 
     //SimulationStatus,
     AssetNotification, 
-    AssetNotificationReply,
+    //AssetNotificationReply,
     AssetNotificationEvent,
     //NotifySimtimeRequest, NotifySimtimeReply,
     CreatePduChannelRequest, CreatePduChannelReply,
@@ -124,40 +124,39 @@ pub async fn start_service(conductor_config: ConductorConfig, robot_config_path:
     //EXEC SIMULATION
     let delta_msec: u32 = conductor_config.delta_msec as u32;
     let s = chan_signal::notify(&[Signal::INT, Signal::TERM]);
-    std::thread::spawn(move || {
-        loop {
-            let do_something = chan::after_ms(delta_msec as u32);
-            chan_select! {
-                s.recv() -> signal => {
-                    println!("signal={:?}", signal);
-                    std::process::exit(0);
-                },
-                do_something.recv() => {
-                    //TODO update status
-                    if hako::api::master_execute() {
-                        match socket {
+    loop {
+        let do_something = chan::after_ms(delta_msec as u32);
+        chan_select! {
+            s.recv() -> signal => {
+                println!("signal={:?}", signal);
+                std::process::exit(0);
+            },
+            do_something.recv() => {
+                //TODO update status
+                //if hako::api::master_execute() {
+                if true {
+                    match socket {
+                        Some(ref _n) => {
+                            //TODO
+                            //hako::method::udp::send_all_subscriber(socket.as_ref().unwrap());
+                        },
+                        None => ()
+                    }
+                    //println!("is_enabled={}", hako::method::mqtt::is_enabled() );
+                    if hako::method::mqtt::is_enabled() {
+                        //println!("start mqtt send1");
+                        match cli {
                             Some(ref _n) => {
-                                hako::method::udp::send_all_subscriber(socket.as_ref().unwrap());
+                                //println!("start mqtt send2");
+                                hako::method::mqtt::publish_mqtt_topics(_n);
                             },
                             None => ()
-                        }
-                        //println!("is_enabled={}", hako::method::mqtt::is_enabled() );
-                        if hako::method::mqtt::is_enabled() {
-                            //println!("start mqtt send1");
-                            match cli {
-                                Some(ref _n) => {
-                                    //println!("start mqtt send2");
-                                    hako::method::mqtt::publish_mqtt_topics(_n);
-                                },
-                                None => ()
-                            }
                         }
                     }
                 }
             }
-        }    
-    });
-    Ok(())
+        }
+    }
 }
 
 async fn event_monitor(conductor_config: ConductorConfig) -> Result<(), Box<dyn std::error::Error>> 
@@ -202,9 +201,11 @@ async fn event_monitor(conductor_config: ConductorConfig) -> Result<(), Box<dyn 
                     }
                     AssetNotificationEvent::Heartbeat => {
                         /* nothing to do */
+                        println!("Heartbeat");
                     }
                     AssetNotificationEvent::None => {
                         /* nothing to do */
+                        println!("NONE");
                     }
                 }
             }
