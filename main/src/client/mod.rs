@@ -76,23 +76,21 @@ pub async fn start_service(conductor_config: ConductorConfig, robot_config_path:
             do_something.recv() => {
                 //TODO update status
                 //if hako::api::master_execute() {
-                if true {
-                    match socket {
+                match socket {
+                    Some(ref _n) => {
+                        hako::method::udp::send_all_subscriber(socket.as_ref().unwrap());
+                    },
+                    None => ()
+                }
+                //println!("is_enabled={}", hako::method::mqtt::is_enabled() );
+                if hako::method::mqtt::is_enabled() {
+                    //println!("start mqtt send1");
+                    match cli {
                         Some(ref _n) => {
-                            hako::method::udp::send_all_subscriber(socket.as_ref().unwrap());
+                            //println!("start mqtt send2");
+                            hako::method::mqtt::publish_mqtt_topics(_n);
                         },
                         None => ()
-                    }
-                    //println!("is_enabled={}", hako::method::mqtt::is_enabled() );
-                    if hako::method::mqtt::is_enabled() {
-                        //println!("start mqtt send1");
-                        match cli {
-                            Some(ref _n) => {
-                                //println!("start mqtt send2");
-                                hako::method::mqtt::publish_mqtt_topics(_n);
-                            },
-                            None => ()
-                        }
                     }
                 }
             }

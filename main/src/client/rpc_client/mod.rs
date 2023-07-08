@@ -8,19 +8,20 @@ use hakoniwa::{
     core_service_client:: { CoreServiceClient },
     AssetInfo,
     ErrorCode,
-    //AssetInfoList, SimStatReply, 
-    //SimulationStatus,
+    SimulationStatus,
     NormalReply,
     AssetNotification, 
     AssetNotificationReply,
     AssetNotificationEvent,
-    //NotifySimtimeRequest, NotifySimtimeReply,
+    NotifySimtimeRequest, NotifySimtimeReply,
     CreatePduChannelRequest, CreatePduChannelReply,
     SubscribePduChannelRequest, SubscribePduChannelReply
 };
 use std::{sync::Mutex};
 use once_cell::sync::Lazy;
+use tonic::Response;
 
+#[derive(Debug, Clone)]
 pub enum SimulationState {
     Stopped,
     Runnable,
@@ -28,6 +29,7 @@ pub enum SimulationState {
     Stopping,
     Terminated,
 }
+#[derive(Debug, Clone)]
 pub struct ClientSimStatus {
     pub master_time: i64,
     pub event: AssetNotificationEvent,
@@ -37,7 +39,7 @@ pub struct ClientSimStatus {
     pub is_pdu_sync_mode: bool,
 }
 
-pub static CLIENT_SIM_STATUS: Lazy<Mutex<ClientSimStatus>> = Lazy::new(|| {
+static CLIENT_SIM_STATUS: Lazy<Mutex<ClientSimStatus>> = Lazy::new(|| {
     Mutex::new(ClientSimStatus { 
         master_time: 0,
         event: AssetNotificationEvent::None,
@@ -48,7 +50,7 @@ pub static CLIENT_SIM_STATUS: Lazy<Mutex<ClientSimStatus>> = Lazy::new(|| {
     })
 });
 
-pub async fn create_client(core_ipaddr: &String, portno: i32) -> Result<(CoreServiceClient<tonic::transport::Channel>), Box<dyn std::error::Error>> 
+pub async fn create_client(core_ipaddr: &String, portno: i32) -> Result<CoreServiceClient<tonic::transport::Channel>, Box<dyn std::error::Error>> 
 {
     let uri = format!("http://{}:{}", core_ipaddr.clone(), portno).parse::<Uri>()?;
     let endpoint = Endpoint::from(uri);
@@ -99,15 +101,40 @@ pub async fn asset_notification_feedback(client: &mut CoreServiceClient<tonic::t
 
     Ok(())
 }
-
-pub async fn notify_simtime(client: &mut CoreServiceClient<tonic::transport::Channel>, asset_name: &String, ev: AssetNotificationEvent, result: bool) -> Result<(), Box<dyn std::error::Error>> 
+fn get_state(status: SimulationStatus) -> SimulationState {
+    match status {
+        SimulationStatus::StatusStopped => SimulationState::Stopped,
+        SimulationStatus::StatusStopping => SimulationState::Stopping,
+        SimulationStatus::StatusRunnable => SimulationState::Runnable,
+        SimulationStatus::StatusRunning => SimulationState::Running,
+        _ => SimulationState::Terminated,
+    }
+}
+pub async fn asset_notify_simtime(client: &mut CoreServiceClient<tonic::transport::Channel>, asset_name: &String, asset_time: i64, is_read_pdu_done: bool, is_write_pdu_done: bool) -> Result<ClientSimStatus, Box<dyn std::error::Error>> 
 {
-
-    Ok(())
+    let req = NotifySimtimeRequest {
+        asset: Some(AssetInfo {
+            name: asset_name.clone()
+        }),
+        asset_time: asset_time,
+        is_read_pdu_done: is_read_pdu_done,
+        is_write_pdu_done: is_write_pdu_done
+    };
+    let res: Response<NotifySimtimeReply> = client.notify_simtime(req).await?;
+    if res.get_ref().ercd() != ErrorCode::Ok {
+        return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "notify simtime response error"))); 
+    }
+    let mut client_sim_status = CLIENT_SIM_STATUS.lock().unwrap();
+    client_sim_status.master_time = res.get_ref().master_time;
+    client_sim_status.is_pdu_created = res.get_ref().is_pdu_created ;
+    client_sim_status.is_pdu_sync_mode = res.get_ref().is_pdu_sync_mode;
+    client_sim_status.is_simulation_mode = res.get_ref().is_simulation_mode;
+    client_sim_status.state = get_state(res.get_ref().status());
+    Ok(client_sim_status.clone())
 }
 
 
-fn get_simevent() -> AssetNotificationEvent
+pub fn get_simevent() -> AssetNotificationEvent
 {
     let mut client_sim_status = CLIENT_SIM_STATUS.lock().unwrap();
     let ret = client_sim_status.event;
