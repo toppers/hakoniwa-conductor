@@ -14,14 +14,14 @@ use hakoniwa::{
     AssetNotificationReply,
     AssetNotificationEvent,
     NotifySimtimeRequest, NotifySimtimeReply,
-    CreatePduChannelRequest, CreatePduChannelReply,
-    SubscribePduChannelRequest, SubscribePduChannelReply
+    //CreatePduChannelRequest, CreatePduChannelReply,
+    //SubscribePduChannelRequest, SubscribePduChannelReply
 };
 use std::{sync::Mutex};
 use once_cell::sync::Lazy;
 use tonic::Response;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum SimulationState {
     Stopped,
     Runnable,

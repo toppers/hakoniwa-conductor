@@ -8,6 +8,7 @@ use crate::hako;
 extern crate lazy_static;
 extern crate once_cell;
 pub mod rpc_client;
+pub mod sim_executor;
 
 use crate::{loader::{
     ConductorConfig, 
@@ -74,8 +75,8 @@ pub async fn start_service(conductor_config: ConductorConfig, robot_config_path:
                 std::process::exit(0);
             },
             do_something.recv() => {
-                //TODO update status
-                //if hako::api::master_execute() {
+                sim_executor::execute(&mut client, &conductor_config.asset_name).await?;
+
                 match socket {
                     Some(ref _n) => {
                         hako::method::udp::send_all_subscriber(socket.as_ref().unwrap());
