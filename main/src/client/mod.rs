@@ -32,7 +32,15 @@ pub async fn start_service(conductor_config: ConductorConfig, robot_config_path:
 {
     hako::api::master_init(conductor_config.max_delay_msec * 1000, conductor_config.delta_msec * 1000);
     let mut client = rpc_client::create_client(&conductor_config.core_ipaddr.clone(), conductor_config.core_portno.clone()).await?;
-    rpc_client::asset_register(&mut client, &conductor_config.asset_name).await?;
+    hako::api::asset_init();
+    if hako::api::asset_register_polling(conductor_config.asset_name.clone()) {
+        println!("INFO: asset_register_polling() success");
+        rpc_client::asset_register(&mut client, &conductor_config.asset_name).await?;    
+    }
+    else {
+        eprintln!("Failed to register asset: {}", conductor_config.asset_name.clone());
+        std::process::exit(1);
+    }
 
     match load_robot_config(&robot_config_path) {
         Ok(config) => { 
