@@ -141,10 +141,14 @@ pub fn write_asset_pub_pdu(robo_name: String, channel_id: i32, data: &[u8], size
     //println!("write_asset_pub_pdu: robo_name={} channel_id={} real_id={}", robo_name.clone(), channel_id, real_id);
     let map = ASSET_PUB_PDU_CHANNELS.lock().unwrap();
     let pdu = map.get(&real_id).unwrap();
-    api::asset_write_pdu(
+    let ret = api::asset_write_pdu(
         pdu.asset_name.clone(), 
         pdu.robo_name.clone(), 
         channel_id.clone(), 
         data.as_ptr() as *const c_char, 
-        size as i32)
+        size as i32);
+    if ret {
+        api::asset_notify_write_pdu_done(pdu.asset_name.clone());
+    }
+    ret
 }
