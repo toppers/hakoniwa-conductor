@@ -1,0 +1,10 @@
+{
+	"asset_name": "ConductorClient-01",
+	"core_ipaddr": "172.25.195.216",
+	"core_portno": 50051,
+	"delta_msec": 20,
+	"max_delay_msec": 100,
+	"udp_server_ip_port": "172.25.195.216:51001",
+	"udp_sender_ip_port": "172.25.195.216:51002",
+	"mqtt_portno": -1
+}
