@@ -163,11 +163,11 @@ async fn initialize_writers(client: &mut CoreServiceClient<tonic::transport::Cha
                 method_type: writer.method_type.clone(),
                 robo_name: robot.name.clone()
             };
-            let ret = hako::api::asset_create_pdu_lchannel(robot.name.clone(), writer.channel_id as i32, writer.pdu_size as i32);
-            if ret == false {
-                return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "asset_create_pdu_lchannel error"))); 
-            }
-            println!("Create Pdu Channel Robot Name: {} Channel: {}", robot.name, writer.channel_id);
+            //let ret = hako::api::asset_create_pdu_lchannel(robot.name.clone(), writer.channel_id as i32, writer.pdu_size as i32);
+            //if ret == false {
+            //    return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "asset_create_pdu_lchannel error"))); 
+            //}
+            //println!("Create Pdu Channel Robot Name: {} Channel: {}", robot.name, writer.channel_id);
             let response = client.create_pdu_channel(request).await?;
             let reply: &CreatePduChannelReply = response.get_ref();
             println!("CreatePduChannel response: {:?}", reply);

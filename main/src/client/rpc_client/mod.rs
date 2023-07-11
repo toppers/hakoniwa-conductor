@@ -179,7 +179,7 @@ pub async fn event_monitor(asset_name: String, core_ipaddr: String, portno: i32)
                     }
                     AssetNotificationEvent::Heartbeat => {
                         /* nothing to do */
-                        println!("Heartbeat");
+                        //println!("Heartbeat");
                     }
                     AssetNotificationEvent::None => {
                         /* nothing to do */
