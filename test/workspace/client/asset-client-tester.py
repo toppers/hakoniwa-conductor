@@ -14,6 +14,12 @@ def handler(signum, frame):
   print(f'SIGNAL(signum={signum})')
   sys.exit(0)
   
+
+def sync_pdu(robo):
+  for channel_id in robo.actions:
+    robo.hako.write_pdu(channel_id, robo.actions[channel_id])
+
+
 print("START TEST")
 
 # signal.SIGALRMのシグナルハンドラを登録
@@ -35,13 +41,26 @@ def delta_usec():
 robo = env.robo()
 robo.delta_usec = delta_usec
 
+# WRITE PDU DATA for initial value
+count = 0
+ch1_data = robo.get_action('ch1')
+ch1_data['data'] = "HELLO_CLIENT_" + str(count)
+sync_pdu(robo)
+
+env.hako.usleep(1000 * 500) #500msec
+
 while True:
-    sensors = env.hako.execute()
-    for channel_id in robo.actions:
-      robo.hako.write_pdu(channel_id, robo.actions[channel_id])
+  sensors = env.hako.execute()
 
-env.reset()
+  # READ PDU DATA
+  ch2_data = robo.get_state("ch2", sensors)
+  print("ch2_data:", ch2_data['data'])
 
-print("END")
-env.reset()
-sys.exit(0)
+  # WRITE PDU DATA
+  ch1_data = robo.get_action('ch1')
+  ch1_data['data'] = "HELLO_CLIENT_" + str(count) + ": YOUR DATA:" + ch2_data
+  sync_pdu(robo)
+
+  env.hako.usleep(1000 * 500) #500msec
+
+
