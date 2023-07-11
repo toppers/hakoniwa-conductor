@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source docker//env.bash
+source docker/env.bash
 
 HAKONIWA_TOP_DIR=`pwd`
 IMAGE_NAME=`cat docker//image_name.txt`
@@ -41,6 +41,7 @@ fi
 
 docker run \
 	-v ${HOST_DEVDIR}:${DOCKER_DEVDIR} \
+	-v ${HOST_SPECDIR}:${DOCKER_SPECDIR} \
 	-v ${HOST_WORKDIR}:${DOCKER_DIR} \
 	-it --rm \
 	--net host \

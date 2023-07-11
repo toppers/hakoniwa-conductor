@@ -80,4 +80,4 @@ RUN bash install.bash
 RUN mkdir -p /root/workspace
 WORKDIR /root/workspace
 
-#CMD [ "/root/workspace/run.bash" ]
+CMD [ "/root/workspace/server/run.bash" ]

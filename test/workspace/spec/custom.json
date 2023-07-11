@@ -22,7 +22,9 @@
           "write_cycle": 1,
           "method_type": "UDP"
         }
-      ]
+      ],
+      "shm_pdu_readers": [],
+      "shm_pdu_writers": []
     }
   ]
 }
