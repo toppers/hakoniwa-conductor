@@ -19,7 +19,6 @@ def sync_pdu(robo):
   for channel_id in robo.actions:
     robo.hako.write_pdu(channel_id, robo.actions[channel_id])
 
-
 print("START TEST")
 
 # signal.SIGALRMのシグナルハンドラを登録
@@ -34,7 +33,6 @@ env.hako.wait_state(hako.HakoState['RUNNING'])
 print("WAIT PDU CREATED:")
 env.hako.wait_pdu_created()
 
-print("GO:")
 
 #do simulation
 def delta_usec():
@@ -48,22 +46,26 @@ count = 0
 ch1_data = robo.get_action('ch1')
 ch1_data['data'] = "HELLO_CLIENT_" + str(count)
 sync_pdu(robo)
+env.hako.execute()
+#robo.hako.write_pdus()
 
-env.hako.usleep(1000 * 500) #500msec
+print("SLEEP START: 1000msec")
+env.hako.usleep(1000 * 1000) #1000msec
 
+print("GO:")
 while True:
   sensors = env.hako.execute()
 
   # READ PDU DATA
   ch2_data = robo.get_state("ch2", sensors)
-  curr_time = robo.hako.hakoc.asset_get_worldtime()
-  print(f"world_time={curr_time} ch2_data:{ch2_data['data']}")
+  curr_time = robo.hako.get_worldtime()
+  print(f"world_time={curr_time}  YOUR DATA: ch2_data:{ch2_data['data']}")
 
   # WRITE PDU DATA
-  #ch1_data = robo.get_action('ch1')
-  #ch1_data['data'] = "HELLO_CLIENT_" + str(count) + ": YOUR DATA:" + ch2_data
+  ch1_data = robo.get_action('ch1')
+  ch1_data['data'] = "HELLO_CLIENT_" + str(count)
   sync_pdu(robo)
-
-  env.hako.usleep(1000 * 500) #500msec
+  count = count + 1
+  env.hako.usleep(1000 * 1000) #1000msec
 
 

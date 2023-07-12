@@ -150,5 +150,6 @@ pub fn write_asset_pub_pdu(robo_name: String, channel_id: i32, data: &[u8], size
     if ret {
         api::asset_notify_write_pdu_done(pdu.asset_name.clone());
     }
+    //println!("asset_notify_write_pdu_done: channel_id={:?} ret={:?}", channel_id, ret);
     ret
 }

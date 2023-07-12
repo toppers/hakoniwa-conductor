@@ -174,12 +174,13 @@ async fn initialize_writers(client: &mut CoreServiceClient<tonic::transport::Cha
             if reply.ercd() != ErrorCode::Ok {
                 return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Can not CreatePduChannel"))); 
             }
+            let udp_ip_port = format!("{}:{}", conductor_config.core_ipaddr, response.get_ref().port);
             let result = hako::pdu::create_asset_sub_pdu(
                                 conductor_config.asset_name.clone(), 
                                 robot.name.clone(), 
                                 writer.channel_id as i32, 
                                 writer.pdu_size as i32, 
-                                response.get_ref().port.to_string(), 
+                                udp_ip_port, 
                                 writer.method_type.clone());
             if result == false {
                 return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Can not create_asset_sub_pdu"))); 

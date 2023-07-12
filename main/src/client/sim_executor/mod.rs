@@ -72,23 +72,27 @@ pub async fn execute(client: &mut CoreServiceClient<tonic::transport::Channel>, 
     let is_write_pdu_done = is_sim_mode;
     let asset_time = hako::api::asset_get_worldtime();
     let status = rpc_client::asset_notify_simtime(client, asset_name, asset_time, is_read_pdu_done, is_write_pdu_done).await?;
-
+    //println!("status:{:?}", status);
     if status.state != rpc_client::SimulationState::Running {
         //シミュレーション開始していないので、まだPDUデータを送信できない。
+        //println!("INFO: conductor execute():status.state is not running: {:?}", status.state);
         return Ok(false);
     }
     else if status.is_pdu_created == false {
         //サーバー側はまだPDUチャネルが未完成なので、まだPDUデータを送信できない。
+        println!("INFO: conductor execute():status.is_pdu_created is false: {:?}", status.is_pdu_created);
         return Ok(false);
     }
     else if status.is_pdu_sync_mode {
         //サーバ側の準備ができたので、PUDデータを通知して
         //サーバー側の PDU sync mode を解消させる必要がある。
+        println!("INFO: conductor execute():status.is_pdu_sync_mode is true: {:?}", status.is_pdu_sync_mode);
         return Ok(true);
     }
     else if status.is_simulation_mode == false {
         //サーバー側がシミュレーション開始できる状態になるまで待つ。
         //一方で、PDUは送信しても良いでしょう。
+        println!("INFO: conductor execute():status.is_simulation_mode is false: {:?}", status.is_simulation_mode);
         return Ok(true);
     }
     //is_pdu_created == true
@@ -96,6 +100,11 @@ pub async fn execute(client: &mut CoreServiceClient<tonic::transport::Channel>, 
     //is_simulation_mode == true
     //check asset time
     hako::api::asset_notify_simtime(asset_name.clone(), status.master_time);
-    Ok(hako::api::master_execute())
+    let ret = hako::api::master_execute();
+    //let world_time = hako::api::asset_get_worldtime();
+    //let state = hako::api::simevent_get_state();
+    //let is_simmode = hako::api::asset_is_simulation_mode();
+    //println!("master_execute={:?} is_simmode={:?} state={:?} world_time={:?}", ret, is_simmode, state, world_time);
+    Ok(ret)
 }
 

@@ -118,7 +118,7 @@ fn send_one_subscriber(socket: &UdpSocket, pdu: &mut AssetSubPduType, channel_id
     for i in 0..size {
         buf[i + off] = data[i];
     }
-    
+    //println!("send udp: ip_port={:?}",  pdu.options.udp_ip_port.clone());
     socket.send_to(&pdu.buffer, pdu.options.udp_ip_port.clone()).expect("couldn't send data");
 }
 

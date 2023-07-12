@@ -38,6 +38,7 @@ PID_CONDUCTOR=$!
 sleep 1
 
 echo "ACTIVATING PYTHON PROG"
+cp spec/hako.py /usr/local/lib/hakoniwa/py/hako.py
 python3 client/asset-client-tester.py &
 PID_PYTHON=$!
 
