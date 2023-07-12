@@ -91,6 +91,7 @@ pub async fn asset_notification_feedback(client: &mut CoreServiceClient<tonic::t
         asset: Some(asset_info),
         ercd: ercd.into()
     };
+    println!("asset_notification_feedback:request={:?}", request);
 
     // Send the register request
     let req = tonic::Request::new(request);
@@ -98,6 +99,7 @@ pub async fn asset_notification_feedback(client: &mut CoreServiceClient<tonic::t
     if response.get_ref().ercd() != ErrorCode::Ok {
         return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "notification feedback response error"))); 
     }
+    println!("asset_notification_feedback:response={:?}", response);
 
     Ok(())
 }

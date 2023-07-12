@@ -158,6 +158,17 @@ class Hako:
             hakoc.asset_write_pdu(self.asset_name, self.control_asset_name, channel_id, self.write_buffers[channel_id], self.write_pdusize[channel_id])
             hakoc.asset_notify_write_pdu_done(self.asset_name)
 
+    def usleep(self, sleep_time_usec):
+        curr_time = hakoc.asset_get_worldtime()
+        target_time = curr_time + sleep_time_usec
+        while curr_time < target_time:
+            if self.asset_time_usec <= curr_time:
+                self.asset_time_usec = self.asset_time_usec + self.robo.delta_usec()
+                hakoc.asset_notify_simtime(self.asset_name, self.asset_time_usec)
+            else:
+                time.sleep(0.01)
+            curr_time = hakoc.asset_get_worldtime()
+
     def execute(self):
         while True:
             result = hakoc.asset_notify_simtime(self.asset_name, self.asset_time_usec)

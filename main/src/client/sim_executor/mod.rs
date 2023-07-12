@@ -10,14 +10,17 @@ async fn server_event_handling(client: &mut CoreServiceClient<tonic::transport::
     let event: AssetNotificationEvent = rpc_client::get_simevent();
     match event {
         AssetNotificationEvent::Start => {
+            println!("server_event_handling:{:?}", AssetNotificationEvent::Start);
             let ret = hako::api::simevent_start();
             rpc_client::asset_notification_feedback(client, asset_name, event, ret).await?;
         }
         AssetNotificationEvent::Stop => {
+            println!("server_event_handling:{:?}", AssetNotificationEvent::Stop);
             let ret = hako::api::simevent_stop();
             rpc_client::asset_notification_feedback(client, asset_name, event, ret).await?;
         }
         AssetNotificationEvent::Reset => {
+            println!("server_event_handling:{:?}", AssetNotificationEvent::Reset);
             let ret = hako::api::simevent_reset();
             rpc_client::asset_notification_feedback(client, asset_name, event, ret).await?;
         }

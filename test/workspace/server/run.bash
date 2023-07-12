@@ -6,6 +6,7 @@ hako-master-rust ${DELTA_MSEC} ${MAX_DELAY_MSEC} \
 sleep 1
 
 LAST_PID=
+cp spec/hako.py /usr/local/lib/hakoniwa/py/hako.py
 PYTHON_PROG=server/asset-srv-tester.py
 echo "INFO: ACTIVATING :${PYTHON_PROG}"
 python3 ${PYTHON_PROG} &

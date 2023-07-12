@@ -10,4 +10,4 @@ cp /usr/local/lib/hakoniwa/py/hako_robomodel_any.py workspace/client/for_test/ba
 cp /usr/local/lib/hakoniwa/py/hako.py workspace/client/for_test/backup/
 
 cp workspace/client/for_test/hako_robomodel_any.py /usr/local/lib/hakoniwa/py/hako_robomodel_any.py
-cp workspace/client/for_test/hako.py /usr/local/lib/hakoniwa/py/hako.py
+cp workspace/spec/hako.py /usr/local/lib/hakoniwa/py/hako.py

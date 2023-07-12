@@ -29,6 +29,8 @@ print("WAIT START:")
 env.hako.wait_event(hako.HakoEvent['START'])
 print("WAIT RUNNING:")
 env.hako.wait_state(hako.HakoState['RUNNING'])
+print("WAIT PDU CREATED:")
+env.hako.wait_pdu_created()
 
 print("GO:")
 
@@ -52,11 +54,12 @@ while True:
 
   # READ PDU DATA
   ch1_data = robo.get_state("ch1", sensors)
-  print("ch1_data:", ch1_data['data'])
+  curr_time = robo.hako.hakoc.asset_get_worldtime()
+  print(f"world_time={curr_time} ch2_data:{ch1_data['data']}")
 
   # WRITE PDU DATA
-  ch2_data = robo.get_action('ch2')
-  ch2_data['data'] = "HELLO_SERVER_" + str(count) + ": YOUR DATA:" + ch1_data
+  #ch2_data = robo.get_action('ch2')
+  #ch2_data['data'] = "HELLO_SERVER_" + str(count) + ": YOUR DATA:" + ch1_data
   sync_pdu(robo)
 
   env.hako.usleep(1000 * 500) #500msec
