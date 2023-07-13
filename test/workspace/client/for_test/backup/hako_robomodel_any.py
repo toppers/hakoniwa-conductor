@@ -22,10 +22,10 @@ class HakoRoboModelAny:
         for robo in self.model.robots:
             robo = ObjectLike(robo)
             print("LOADED: " + robo.name)
-            self.create_pdu_lchannel(robo.rpc_pdu_writers)
-            self.create_pdu_lchannel(robo.shm_pdu_writers)
-            self.subscribe_pdu_lchannel(robo.rpc_pdu_readers)
-            self.subscribe_pdu_lchannel(robo.shm_pdu_readers)
+            self.create_pdu_lchannel(robo.rpc_pdu_readers)
+            self.create_pdu_lchannel(robo.shm_pdu_readers)
+            self.subscribe_pdu_lchannel(robo.rpc_pdu_writers)
+            self.subscribe_pdu_lchannel(robo.shm_pdu_writers)
 
     def get_state(self, name, obserbation):
         return obserbation[self.channel_map[name]]

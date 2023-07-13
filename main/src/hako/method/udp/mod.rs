@@ -52,7 +52,7 @@ pub fn activate_server(ip_port: &String)
                         robo_name.push(buf[index] as char);
                     }
                     //robo_name.push('\0'); deleted because panic...
-                    //println!("robo name={}", robo_name);
+                    //println!("UDP RECV robo name={}", robo_name);
                     //12+namelen..bufsize: buffer
                     let head_off = 12 + name_len as usize;
                     let ret = write_asset_pub_pdu(robo_name, channel_id, &buf[head_off..], pdu_size as usize);

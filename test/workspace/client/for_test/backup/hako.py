@@ -99,13 +99,6 @@ class Hako:
             else:
                 return True
 
-    def wait_pdu_created(self):
-        while True:
-            if hakoc.asset_is_pdu_created() == False:
-                time.sleep(0.01)
-            else:
-                return True
-
     def stop(self):
         if self.state() == HakoState['RUNNING']:
             hakoc.stop()
@@ -164,21 +157,6 @@ class Hako:
             #print("wirte_pdus: write_buffers:" + str(self.write_buffers[channel_id]))
             hakoc.asset_write_pdu(self.asset_name, self.control_asset_name, channel_id, self.write_buffers[channel_id], self.write_pdusize[channel_id])
             hakoc.asset_notify_write_pdu_done(self.asset_name)
-
-    def get_worldtime():
-        return hakoc.asset_get_worldtime()
-
-    def usleep(self, sleep_time_usec):
-        curr_time = hakoc.asset_get_worldtime()
-        target_time = curr_time + sleep_time_usec
-        while curr_time < target_time:
-            #print(f"curr_time={curr_time} asset_time_usec={self.asset_time_usec} target_time={target_time}")
-            if self.asset_time_usec <= curr_time:
-                self.asset_time_usec = self.asset_time_usec + self.robo.delta_usec()
-                hakoc.asset_notify_simtime(self.asset_name, self.asset_time_usec)
-            else:
-                time.sleep(0.01)
-            curr_time = hakoc.asset_get_worldtime()
 
     def execute(self):
         while True:

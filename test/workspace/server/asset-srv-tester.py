@@ -47,7 +47,7 @@ sync_pdu(robo)
 env.hako.execute()
 
 print("SLEEP START: 1000msec")
-env.hako.usleep(1000 * 1000) #1000msec
+env.hako.usleep(980 * 1000) #1000msec
 print("GO:")
 
 while True:
@@ -64,7 +64,7 @@ while True:
   sync_pdu(robo)
   count = count + 1
 
-  env.hako.usleep(1000 * 1000) #1000msec
+  env.hako.usleep(980 * 1000) #1000msec
 
 
 

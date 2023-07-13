@@ -32,6 +32,7 @@ print("WAIT RUNNING:")
 env.hako.wait_state(hako.HakoState['RUNNING'])
 print("WAIT PDU CREATED:")
 env.hako.wait_pdu_created()
+print("OK PDU CREATED:")
 
 
 #do simulation
@@ -46,11 +47,12 @@ count = 0
 ch1_data = robo.get_action('ch1')
 ch1_data['data'] = "HELLO_CLIENT_" + str(count)
 sync_pdu(robo)
+print("DO EXECUTE():")
 env.hako.execute()
 #robo.hako.write_pdus()
 
 print("SLEEP START: 1000msec")
-env.hako.usleep(1000 * 1000) #1000msec
+env.hako.usleep(980 * 1000) #1000msec
 
 print("GO:")
 while True:
@@ -66,6 +68,6 @@ while True:
   ch1_data['data'] = "HELLO_CLIENT_" + str(count)
   sync_pdu(robo)
   count = count + 1
-  env.hako.usleep(1000 * 1000) #1000msec
+  env.hako.usleep(980 * 1000) #1000msec
 
 

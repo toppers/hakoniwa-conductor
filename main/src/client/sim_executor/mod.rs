@@ -3,7 +3,26 @@ use crate::client::rpc_client;
 use crate::client::rpc_client::hakoniwa::core_service_client::CoreServiceClient;
 use crate::client::rpc_client::hakoniwa::AssetNotificationEvent;
 use crate::hako;
+use crate::hako::api::SimulationStateType;
 
+fn wait_asset_callback_done(asset_name: &String, prev_state: SimulationStateType, next_state: SimulationStateType) -> Result<bool, Box<dyn std::error::Error>>
+{
+    println!("wait_asset_callback_done(): prev_state={:?} next_state={:?}", prev_state, next_state);
+    loop {
+        hako::api::master_execute();
+        asset_do_callback(asset_name)?;
+        let curr_state: SimulationStateType = hako::api::simevent_get_state();
+        if curr_state == prev_state {
+            continue;
+        }
+        if curr_state == next_state {
+            return Ok(true);
+        }
+        else {
+            return Ok(false);
+        }
+    }
+}
 
 async fn server_event_handling(client: &mut CoreServiceClient<tonic::transport::Channel>, asset_name: &String) -> Result<bool, Box<dyn std::error::Error>>
 {
@@ -12,17 +31,42 @@ async fn server_event_handling(client: &mut CoreServiceClient<tonic::transport::
         AssetNotificationEvent::Start => {
             println!("server_event_handling:{:?}", AssetNotificationEvent::Start);
             let ret = hako::api::simevent_start();
-            rpc_client::asset_notification_feedback(client, asset_name, event, ret).await?;
+            /**/
+            if ret {
+                let prev_state = hako::api::simevent_get_state();
+                let result = wait_asset_callback_done(asset_name, prev_state, SimulationStateType::Running)?;
+                rpc_client::asset_notification_feedback(client, asset_name, event, result).await?;
+                //TODO 初期データの書き込み。
+                hako::api::asset_notify_write_pdu_done(asset_name.clone());
+                println!("asset_notify_write_pdu_done() asset_name={:?} ", asset_name.clone());
+            }
+            else {
+                rpc_client::asset_notification_feedback(client, asset_name, event, ret).await?;
+            }            
         }
         AssetNotificationEvent::Stop => {
             println!("server_event_handling:{:?}", AssetNotificationEvent::Stop);
             let ret = hako::api::simevent_stop();
-            rpc_client::asset_notification_feedback(client, asset_name, event, ret).await?;
+            if ret {
+                let prev_state = hako::api::simevent_get_state();
+                let result = wait_asset_callback_done(asset_name, prev_state, SimulationStateType::Stopped)?;
+                rpc_client::asset_notification_feedback(client, asset_name, event, result).await?;
+            }
+            else {
+                rpc_client::asset_notification_feedback(client, asset_name, event, ret).await?;
+            }
         }
         AssetNotificationEvent::Reset => {
             println!("server_event_handling:{:?}", AssetNotificationEvent::Reset);
             let ret = hako::api::simevent_reset();
-            rpc_client::asset_notification_feedback(client, asset_name, event, ret).await?;
+            if ret {
+                let prev_state = hako::api::simevent_get_state();
+                let result = wait_asset_callback_done(asset_name, prev_state, SimulationStateType::Stopped)?;
+                rpc_client::asset_notification_feedback(client, asset_name, event, result).await?;
+            }
+            else {
+                rpc_client::asset_notification_feedback(client, asset_name, event, ret).await?;
+            }
         }
         AssetNotificationEvent::None => {
             //nothing to do
@@ -65,7 +109,6 @@ fn asset_do_callback(asset_name: &String)-> Result<bool, Box<dyn std::error::Err
 pub async fn execute(client: &mut CoreServiceClient<tonic::transport::Channel>, asset_name: &String) -> Result<bool, Box<dyn std::error::Error>>
 {
     server_event_handling(client, asset_name).await?;
-    asset_do_callback(&asset_name)?;
 
     let is_sim_mode = hako::api::asset_is_simulation_mode();
     let is_read_pdu_done = is_sim_mode;
