@@ -2,6 +2,12 @@
 
 source docker/env.bash
 
+CLIENT_CUSTOM_JSON_PATH=spec/custom.json
+if [ $# -eq 1 ]
+then
+	CLIENT_CUSTOM_JSON_PATH=$1
+fi
+
 HAKONIWA_TOP_DIR=`pwd`
 IMAGE_NAME=`cat docker//image_name.txt`
 IMAGE_TAG=`cat docker/appendix/latest_version.txt`
@@ -51,5 +57,6 @@ docker run \
 	-e GRPC_PORT=${GRPC_PORT} \
 	-e UDP_SRV_PORT=${UDP_SRV_PORT} \
 	-e UDP_SND_PORT=${UDP_SND_PORT} \
+	-e CLIENT_CUSTOM_JSON_PATH=${CLIENT_CUSTOM_JSON_PATH} \
 	--name ${IMAGE_NAME} ${DOCKER_IMAGE} 
 

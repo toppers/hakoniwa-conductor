@@ -6,6 +6,12 @@ export PYTHONPATH="/usr/local/lib/hakoniwa:$PYTHONPATH"
 export PYTHONPATH="/usr/local/lib/hakoniwa/py:$PYTHONPATH"
 CLIENT_PATH=../../main/target/debug/
 
+CLIENT_CUSTOM_JSON_PATH=spec/custom.json
+if [ $# -eq 1 ]
+then
+    CLIENT_CUSTOM_JSON_PATH=$1
+fi
+
 PID_CONDUCTOR=
 PID_PYTHON=
 function handle_signal {
@@ -27,19 +33,16 @@ function handle_signal {
 }
 trap handle_signal SIGINT SIGTERM
 
-
-
 echo "ACTIVATING CONDUCTOR(CLIENT)"
 ${CLIENT_PATH}/hakoniwa-conductor-client \
     client/conductor_config.json \
-    spec/custom.json &
+    ${CLIENT_CUSTOM_JSON_PATH} &
 PID_CONDUCTOR=$!
 
 sleep 1
 
 echo "ACTIVATING PYTHON PROG"
-cp spec/hako.py /usr/local/lib/hakoniwa/py/hako.py
-python3 client/asset-client-tester.py &
+python3 client/asset-client-tester.py ${CLIENT_CUSTOM_JSON_PATH} &
 PID_PYTHON=$!
 
 sleep 1

@@ -10,6 +10,11 @@ import signal
 import hako_robomodel_any
 import time
 
+if len(sys.argv) != 2:
+  print("Usage: <client-json-path>")
+  sys.exit(1)
+client_json_path=sys.argv[1]
+
 def handler(signum, frame):
   print(f'SIGNAL(signum={signum})')
   sys.exit(0)
@@ -29,7 +34,7 @@ def delta_usec():
   return 20000
 
 #create hakoniwa env
-env = hako_env.make("TB3RoboModel", "any", "spec/custom.json")
+env = hako_env.make("TB3RoboModel", "any_client", client_json_path)
 
 while True:
   print("WAIT START:")
