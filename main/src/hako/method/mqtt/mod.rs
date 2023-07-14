@@ -76,7 +76,8 @@ fn get_channel_id(topic: String) -> i32
     for (real_id, pdu) in map.iter_mut() {
     //for channel_id in 0..4 {
         if pdu.method_type == "MQTT" {
-            //println!("pdu_robo_name={:?} channel_id={:?}", pdu.robo_name, pdu.channel_id);
+            //println!("topic={:?}", topic);
+            //println!("pdu_robo_name={:?} channel_id={:?} real_id={:?}", pdu.robo_name, pdu.channel_id, real_id);
             let combined = format!("hako_mqtt_{}_{}", pdu.robo_name, pdu.channel_id);
             if topic == combined {
                 //println!("got it!: real_id = {:?}", real_id);
@@ -88,7 +89,7 @@ fn get_channel_id(topic: String) -> i32
     -1
 }
 
-pub fn activate_server()
+pub fn activate_server(client_id: &str)
 {
     unsafe {
         if MQTT_SERVER_ACTIVATED == true {
@@ -100,10 +101,14 @@ pub fn activate_server()
     let mut topics: Vec<String> = Vec::with_capacity(100);
     let mut qoss: Vec<i32> = Vec::with_capacity(100);
     create_topics(&mut topics, &mut qoss);
+    if topics.is_empty() {
+        println!("INFO: MQTT NO SUBSCRIBING TOPICS");
+        return;
+    }
     let buffer_siz = 1024 * 1024;
     let create_opts = mqtt::CreateOptionsBuilder::new_v3()
         .server_uri(ip_port)
-        .client_id("hako-mqtt_subscriber")
+        .client_id(client_id)
         .finalize();
     let mut cli = mqtt::AsyncClient::new(create_opts).unwrap_or_else(|e| {
         println!("Error creating the client: {:?}", e);
@@ -149,8 +154,8 @@ pub fn activate_server()
                     //println!("recv topic={}", msg.topic());
                     let real_id = get_channel_id(msg.topic().to_string());
                     assert!(real_id >= 0);
-                    //println!("write_asset_pub_pdu: real_id={} size={}", real_id, msg.payload().len());
                     let (channel_id, robo_name) = get_asset_pub_pdu_channel_robo_name(real_id);
+                    //println!("write_asset_pub_pdu: real_id={} size={}", real_id, msg.payload().len());
                     let ret = write_asset_pub_pdu(robo_name, channel_id, msg.payload(), msg.payload().len());
                     assert!(ret == true);
                 }
@@ -173,12 +178,12 @@ pub fn activate_server()
     });
 }
 
-pub fn create_mqtt_publisher() -> Option<mqtt::Client>
+pub fn create_mqtt_publisher(client_id: &str) -> Option<mqtt::Client>
 {
     let ip_port = get_mqtt_url();
     let create_opts = mqtt::CreateOptionsBuilder::new_v3()
         .server_uri(ip_port)
-        .client_id("hako-mqtt_publisher")
+        .client_id(client_id)
         .finalize();
     let mut cli = mqtt::Client::new(create_opts).unwrap_or_else(|e| {
         println!("Error creating the client: {:?}", e);
@@ -201,7 +206,7 @@ pub fn publish_mqtt_topics(cli: &mqtt::Client)
     let mut map = ASSET_SUB_PDU_CHANNELS.lock().unwrap();
     for (_real_id, pdu) in map.iter_mut() {
         if pdu.method_type == "MQTT" {
-            assert!(pdu.pdu_size < 4096);
+            //assert!(pdu.pdu_size < 4096);
             //println!("publish_mqtt_topics(): send channel_id={}", pdu.channel_id);
             let mut buf: Vec<u8> = vec![0; pdu.pdu_size as usize];
             let result = api::asset_read_pdu(

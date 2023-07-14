@@ -70,8 +70,8 @@ pub async fn start_service(conductor_config: ConductorConfig, robot_config_path:
     let mut cli: Option<mqtt::Client> = None;
     if conductor_config.mqtt_portno > 0 {
         hako::method::mqtt::set_mqtt_url(conductor_config.core_ipaddr.clone(), conductor_config.mqtt_portno);
-        cli = hako::method::mqtt::create_mqtt_publisher();
-        hako::method::mqtt::activate_server();
+        cli = hako::method::mqtt::create_mqtt_publisher("hako-mqtt-publisher-client-01");
+        hako::method::mqtt::activate_server("hako-mqtt-subscriber-client-01");
     }
     //EXEC SIMULATION
     let delta_msec: u32 = conductor_config.delta_msec as u32;

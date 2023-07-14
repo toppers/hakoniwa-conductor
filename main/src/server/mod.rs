@@ -234,7 +234,7 @@ impl CoreService for HakoCoreService {
                             event: AssetNotificationEvent::Start as i32,
                         };
                         if hako::method::mqtt::is_enabled() {
-                            hako::method::mqtt::activate_server();
+                            hako::method::mqtt::activate_server("hako-mqtt-subscriber-server");
                         }
                         println!("## SimulationAssetEvent START");
                         tx.send(Ok(ev)).await.unwrap();
