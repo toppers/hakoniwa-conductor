@@ -39,7 +39,8 @@
   * hakoniwa-conductor/test/workspace/spec/custom_mqtt.json
 * 箱庭コンダクタのクライアントのコンフィグ
   * hakoniwa-conductor/test/workspace/client/conductor_config.json
-  * IPアドレスは、WSL2上の eth0 のIPアドレスを設定してください。
+    * IPアドレスは、WSL2上の eth0 のIPアドレスを設定してください。
+    * MQTTのテストをする場合は、mqtt_portnoの値を `1883` にしてください。
 
 ## インストール手順
 
