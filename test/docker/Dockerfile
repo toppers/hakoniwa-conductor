@@ -54,6 +54,7 @@ RUN apt-get install -y libc++-dev libc++abi-dev
 
 RUN apt install -y mosquitto mosquitto-clients
 
+RUN apt update
 ENV PYTHONPATH="/usr/local/lib/hakoniwa:$PYTHONPATH"
 WORKDIR /root
 RUN git clone --recursive https://github.com/toppers/hakoniwa-core-cpp-client.git
@@ -73,7 +74,7 @@ RUN pip3 install pyquaternion
 RUN pip3 install scipy
 
 WORKDIR /root
-RUN git clone --recursive https://github.com/toppers/hakoniwa-conductor.git
+RUN git clone -b client --recursive https://github.com/toppers/hakoniwa-conductor.git
 WORKDIR /root/hakoniwa-conductor/main
 RUN bash install.bash
 

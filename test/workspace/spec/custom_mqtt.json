@@ -9,7 +9,7 @@
           "name": "TB3RoboModel_ch2",
           "channel_id": 2,
           "pdu_size": 256,
-          "method_type": "UDP"
+          "method_type": "MQTT"
         }
       ],
       "rpc_pdu_writers": [

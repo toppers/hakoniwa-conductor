@@ -46,7 +46,9 @@ pub struct ConductorConfig {
     pub max_delay_msec: i64,
     pub udp_server_ip_port: String,
     pub udp_sender_ip_port: String,
-    pub mqtt_portno: i32
+    pub mqtt_portno: i32,
+    pub mqtt_pub_client_id: String,
+    pub mqtt_sub_client_id: String
 }
 
 pub fn load_robot_config(filename: &str) -> Result<RobotConfig, Box<dyn std::error::Error>> {
@@ -100,5 +102,7 @@ pub fn show_conductor_config(conductor_config: &ConductorConfig)
     println!("Conductor udp_server_port: {}", conductor_config.udp_server_ip_port);
     println!("Conductor udp_sender_port: {}", conductor_config.udp_sender_ip_port);
     println!("Conductor mqtt_portno: {}", conductor_config.mqtt_portno);
+    println!("Conductor mqtt_pub_client_id: {}", conductor_config.mqtt_pub_client_id);
+    println!("Conductor mqtt_sub_client_id: {}", conductor_config.mqtt_sub_client_id);
     println!("-------------------");
 }
