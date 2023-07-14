@@ -35,3 +35,11 @@ tonic-build = "0.8"
 [profile.dev]
 opt-level = 0
 debug = true
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
+
+[[bin]]
+name = "hakoniwa-conductor-client"
+path = "src/main_client.rs"

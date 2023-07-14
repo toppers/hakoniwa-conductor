@@ -44,7 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.len() == 7 {
         hako::method::mqtt::set_mqtt_url(ipaddr.clone(), args[6].parse::<i32>().unwrap());
         //hako::method::mqtt::activate_server();
-        cli = hako::method::mqtt::create_mqtt_publisher();
+        cli = hako::method::mqtt::create_mqtt_publisher("hako-mqtt-publishr-server");
     }
     println!("delta_msec = {}", delta_msec);
     println!("max_delay_msec = {}", max_delay_msec);

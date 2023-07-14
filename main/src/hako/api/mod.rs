@@ -55,7 +55,7 @@ pub enum SimulationAssetEventType
     Error,
     Invalid
 }
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum SimulationStateType
 {
     None,
