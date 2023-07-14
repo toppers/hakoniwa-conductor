@@ -6,5 +6,5 @@
 	"max_delay_msec": 100,
 	"udp_server_ip_port": "172.25.195.216:51001",
 	"udp_sender_ip_port": "172.25.195.216:51002",
-	"mqtt_portno": -1
+	"mqtt_portno": 1883
 }

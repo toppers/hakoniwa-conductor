@@ -76,8 +76,10 @@ fn get_channel_id(topic: String) -> i32
     for (real_id, pdu) in map.iter_mut() {
     //for channel_id in 0..4 {
         if pdu.method_type == "MQTT" {
+            //println!("pdu_robo_name={:?} channel_id={:?}", pdu.robo_name, pdu.channel_id);
             let combined = format!("hako_mqtt_{}_{}", pdu.robo_name, pdu.channel_id);
             if topic == combined {
+                //println!("got it!: real_id = {:?}", real_id);
                 return real_id.clone();
             }
         }
@@ -200,8 +202,8 @@ pub fn publish_mqtt_topics(cli: &mqtt::Client)
     for (_real_id, pdu) in map.iter_mut() {
         if pdu.method_type == "MQTT" {
             assert!(pdu.pdu_size < 4096);
-            //println!("publish_mqtt_topics(): send channel_id={}", channel_id);
-            let mut buf : Box<[u8]> = Box::new([0; 4096]);
+            //println!("publish_mqtt_topics(): send channel_id={}", pdu.channel_id);
+            let mut buf: Vec<u8> = vec![0; pdu.pdu_size as usize];
             let result = api::asset_read_pdu(
                 pdu.asset_name.clone(), 
                 pdu.robo_name.clone(), 
@@ -210,7 +212,8 @@ pub fn publish_mqtt_topics(cli: &mqtt::Client)
                 pdu.pdu_size as i32);
             if result {
                 let topic = format!("hako_mqtt_{}_{}", pdu.robo_name.clone(), pdu.channel_id);
-                let msg = mqtt::Message::new(topic, buf, mqtt::QOS_1);
+                let msg = mqtt::Message::new(topic, &buf[..], mqtt::QOS_1);
+                //println!("publish_mqtt_topics(): hako_mqtt_{}_{}: msg={:?}", pdu.robo_name.clone(), pdu.channel_id, msg);
                 if let Err(e) = cli.publish(msg) {
                     println!("Error sending message: {:?}", e);
                 }

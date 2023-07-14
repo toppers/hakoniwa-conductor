@@ -12,6 +12,7 @@ then
     CLIENT_CUSTOM_JSON_PATH=$1
 fi
 
+#PIQ_MOSQUITO=
 PID_CONDUCTOR=
 PID_PYTHON=
 function handle_signal {
@@ -24,6 +25,10 @@ function handle_signal {
     then
         kill -9 $PID_PYTHON
     fi
+#    if [ ! -z $PIQ_MOSQUITO ]
+#    then
+#        kill -9 $PIQ_MOSQUITO
+#    fi
     echo "WAITKING KILLED PROCS"
     sleep 1
     hako-cleanup
@@ -32,6 +37,27 @@ function handle_signal {
     exit 0
 }
 trap handle_signal SIGINT SIGTERM
+
+
+#MQTT_PORT=
+#grep MQTT $CLIENT_CUSTOM_JSON_PATH > /dev/null
+#if [ $? -eq 0 ]
+#then
+#    which mosquitto > /dev/null
+#    if [ $? -ne 0 ]
+#    then
+#        echo "ERROR: Please install mosquitto"
+#        echo "sudo apt install -y mosquitto mosquitto-clients"
+#        exit 1
+#    fi
+#    cd client
+#    MQTT_PORT=1983
+#    echo "INFO: ACTIVATING MOSQUITTO"
+#    mosquitto -c config/mosquitto.conf &
+#    PID_CONDUCTOR=$!
+#    sleep 2
+#    cd ..
+#fi
 
 echo "ACTIVATING CONDUCTOR(CLIENT)"
 ${CLIENT_PATH}/hakoniwa-conductor-client \

@@ -113,8 +113,8 @@ pub fn get_asset_pub_pdu_channel_robo_name(real_id: i32) -> (i32, String)
 
 pub fn create_asset_pub_pdu(asset_name: String, robo_name: String, channel_id: i32, pdu_size: i32, method_type: String) -> bool
 {
-    println!("create_asset_pub_pdu");
     let real_id = api::asset_get_pdu_channel(robo_name.clone(), channel_id);
+    println!("create_asset_pub_pdu: robo_name={} channel_id={} real_id={}", robo_name.clone(), channel_id, real_id);
     let mut map = ASSET_PUB_PDU_CHANNELS.lock().unwrap();
     match map.get(&real_id) {
         Some(_n) => {

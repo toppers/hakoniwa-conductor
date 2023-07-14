@@ -71,6 +71,7 @@ pub async fn start_service(conductor_config: ConductorConfig, robot_config_path:
     if conductor_config.mqtt_portno > 0 {
         hako::method::mqtt::set_mqtt_url(conductor_config.core_ipaddr.clone(), conductor_config.mqtt_portno);
         cli = hako::method::mqtt::create_mqtt_publisher();
+        hako::method::mqtt::activate_server();
     }
     //EXEC SIMULATION
     let delta_msec: u32 = conductor_config.delta_msec as u32;
@@ -129,8 +130,8 @@ async fn initialize_readers(client: &mut CoreServiceClient<tonic::transport::Cha
             if ret == false {
                 return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "asset_create_pdu_lchannel error"))); 
             }
-
-            println!("Subscribe Pdu Channel Robot Name: {} Channel: {}", robot.name, reader.channel_id);
+            let real_id = hako::api::asset_get_pdu_channel(robot.name.clone(), reader.channel_id as i32);
+            println!("Subscribe Pdu Channel Robot Name: {} Channel: {} real_id: {}", robot.name, reader.channel_id, real_id);
             let response = client.subscribe_pdu_channel(request).await?;
             let reply: &SubscribePduChannelReply = response.get_ref();
             println!("SubscribePduChannel response: {:?}", reply);
