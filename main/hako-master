@@ -8,6 +8,11 @@ function signal_handler()
 	exit 0
 }
 
+if [ `uname` = "Darwin" ]
+then
+	export DYLD_LIBRARY_PATH=/usr/local/lib/hakoniwa:${DYLD_LIBRARY_PATH}
+fi
+
 trap signal_handler INT TERM
 
 hako-cleanup
