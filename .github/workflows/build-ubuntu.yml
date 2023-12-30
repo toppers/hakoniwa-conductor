@@ -29,12 +29,15 @@ jobs:
           default: true
           override: true
 
-      - name: Install Dependencies
+      - name: Create directories and Install Dependencies
         run: |
+          sudo mkdir -p /usr/local/lib/hakoniwa/
+          sudo chown $USER /usr/local/lib/hakoniwa/
           sudo apt-get update
           sudo apt-get install -y libc++-dev libc++abi-dev libpython3-dev
           git clone --recursive https://github.com/toppers/hakoniwa-core-cpp-client.git
           cd hakoniwa-core-cpp-client
+          # ここで必要に応じてビルドスクリプトを修正
           bash build.bash
           bash install.bash
 
