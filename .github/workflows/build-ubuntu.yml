@@ -1,14 +1,16 @@
-name: build
+name: build-ubuntu
 
 on:
   push:
+    branches: [ main ]
+    paths:
+      - '**/*.c'
+      - '**/*.cpp'
+      - '**/*.h'
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
@@ -31,22 +33,11 @@ jobs:
           default: true
           override: true
 
-      - name: Download hakoniwa-core-cpp for Linux
-        if:  " (runner.os == 'Linux')"
+      - name: Install Dependencies
         run: |
           sudo wget https://github.com/toppers/hakoniwa-core-cpp-client/releases/download/v1.0.2/libshakoc.so -P /usr/local/lib/hakoniwa/
           sudo apt-get update
           sudo apt-get install -y libc++-dev libc++abi-dev libpython3-dev
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Download hakoniwa-core-cpp for Mac(intell)
-        if:  " (runner.os == 'macOS')"
-        run: |
-          sudo wget https://github.com/toppers/hakoniwa-core-cpp-client/releases/download/v1.0.2/libshakoc.dylib -P /usr/local/lib/hakoniwa/
 
       - name: Build hakoniwa-conductor
         run: |
