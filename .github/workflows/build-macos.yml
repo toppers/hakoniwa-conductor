@@ -32,7 +32,10 @@ jobs:
       - name: Install Dependencies and Build hakoniwa-core-cpp-client
         run: |
           brew install python3
-          mkdir -p ${HOME}/lib/hakoniwa/
+          sudo mkdir -p /usr/local/lib/hakoniwa/
+          sudo chown $USER /usr/local/lib/hakoniwa/
+          sudo mkdir -p /usr/local/bin/hakoniwa/
+          sudo chown $USER /usr/local/bin/hakoniwa/
           git clone --recursive https://github.com/toppers/hakoniwa-core-cpp-client.git
           cd hakoniwa-core-cpp-client
           bash build.bash
