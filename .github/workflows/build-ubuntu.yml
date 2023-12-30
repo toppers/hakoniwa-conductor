@@ -3,10 +3,6 @@ name: build-ubuntu
 on:
   push:
     branches: [ main ]
-    paths:
-      - '**/*.c'
-      - '**/*.cpp'
-      - '**/*.h'
 
 jobs:
   build:
