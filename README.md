@@ -1,4 +1,4 @@
-[![Build](https://github.com/toppers/hakoniwa-conductor/actions/workflows/build.yml/badge.svg)](https://github.com/toppers/hakoniwa-conductor/actions/workflows/build.yml)
+[![build-ubuntu](https://github.com/toppers/hakoniwa-conductor/actions/workflows/build-ubuntu.yml/badge.svg)](https://github.com/toppers/hakoniwa-conductor/actions/workflows/build-ubuntu.yml)
 
 箱庭コンダクタは、分散配置されているマシン間で、箱庭上にいるアセット間のシミュレーション調停する役割をするデーモンプロセスです。
 
