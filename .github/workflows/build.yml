@@ -1,0 +1,54 @@
+name: Build hakoniwa-conductor
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Setup cmake
+        uses: jwlawson/actions-setup-cmake@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
+
+      - name: Install rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install target Dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libc++-dev libc++abi-dev
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build hakoniwa-core-cpp-client
+        run: |
+          git clone --recursive https://github.com/toppers/hakoniwa-core-cpp-client.git
+          cd hakoniwa-core-cpp-client
+          bash build.bash
+          bash install.bash
+
+      - name: Build hakoniwa-conductor
+        run: |
+          cd main
+          bash build.bash
+          cp ./target/debug/main /usr/local/bin/hakoniwa/hako-master-rust
+          cp hako-master /usr/local/bin/hakoniwa/hako-master
+          cp hako-cleanup /usr/local/bin/hakoniwa/hako-cleanup
+          chmod +x /usr/local/bin/hakoniwa/hako-master
+          chmod +x /usr/local/bin/hakoniwa/hako-cleanup
