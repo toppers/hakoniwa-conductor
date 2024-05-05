@@ -65,7 +65,7 @@ jobs:
           echo "ARTIFACT_HAKONIWA-CONDUCTOR=hakoniwa-conductor_${{ env.OS_NAME }}_${{ env.OS_ARCH }}.tar.gz" >> $GITHUB_ENV
 
       - name: upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: hakoniwa-conductor_${{ env.OS_NAME }}_${{ env.OS_ARCH }}
           path: |
