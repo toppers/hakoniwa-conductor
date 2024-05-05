@@ -39,10 +39,17 @@ jobs:
 
       - name: Build hakoniwa-core-cpp-client
         run: |
+          echo "OS_NAME=$(uname -s)" >> $GITHUB_ENV
+          echo "OS_ARCH=$(uname -m)" >> $GITHUB_ENV
           git clone --recursive https://github.com/toppers/hakoniwa-core-cpp-client.git
           cd hakoniwa-core-cpp-client
           bash build.bash
           bash install.bash
+
+      # - name: Archive hakoniwa-core-cpp-client
+      #   run: |
+      #     tar -czf hakoniwa-core-cpp-client_${{ env.OS_NAME }}_${{ env.OS_ARCH }}.tar.gz /usr/local/bin/hakoniwa /usr/local/lib/hakoniwa /var/lib/hakoniwa /etc/hakoniwa
+      #     echo "ARTIFACT_HAKONIWA-CORE-CPP-CLIENT=hakoniwa-core-cpp-client_${{ env.OS_NAME }}_${{ env.OS_ARCH }}.tar.gz" >> $GITHUB_ENV
 
       - name: Build hakoniwa-conductor
         run: |
@@ -53,3 +60,14 @@ jobs:
           sudo cp hako-cleanup /usr/local/bin/hakoniwa/hako-cleanup
           sudo chmod +x /usr/local/bin/hakoniwa/hako-master
           sudo chmod +x /usr/local/bin/hakoniwa/hako-cleanup
+          cd ../
+          tar -cvzf hakoniwa-conductor_${{ env.OS_NAME }}_${{ env.OS_ARCH }}.tar.gz /usr/local/bin/hakoniwa /usr/local/lib/hakoniwa /var/lib/hakoniwa /etc/hakoniwa
+          echo "ARTIFACT_HAKONIWA-CONDUCTOR=hakoniwa-conductor_${{ env.OS_NAME }}_${{ env.OS_ARCH }}.tar.gz" >> $GITHUB_ENV
+
+      - name: upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: hakoniwa-conductor_${{ env.OS_NAME }}_${{ env.OS_ARCH }}
+          path: |
+            ${{ env.ARTIFACT_HAKONIWA-CONDUCTOR }}
+          retention-days: 5
