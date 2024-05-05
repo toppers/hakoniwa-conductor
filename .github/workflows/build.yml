@@ -47,8 +47,8 @@ jobs:
         run: |
           cd main
           bash build.bash
-          cp ./target/debug/main /usr/local/bin/hakoniwa/hako-master-rust
-          cp hako-master /usr/local/bin/hakoniwa/hako-master
-          cp hako-cleanup /usr/local/bin/hakoniwa/hako-cleanup
-          chmod +x /usr/local/bin/hakoniwa/hako-master
-          chmod +x /usr/local/bin/hakoniwa/hako-cleanup
+          sudo cp ./target/debug/main /usr/local/bin/hakoniwa/hako-master-rust
+          sudo cp hako-master /usr/local/bin/hakoniwa/hako-master
+          sudo cp hako-cleanup /usr/local/bin/hakoniwa/hako-cleanup
+          sudo chmod +x /usr/local/bin/hakoniwa/hako-master
+          sudo chmod +x /usr/local/bin/hakoniwa/hako-cleanup
