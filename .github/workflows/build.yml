@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, macos-13]
+        os: [ubuntu-latest, ubuntu-20.04, macos-latest, macos-13]
 
     steps:
       - name: Setup cmake
@@ -61,13 +61,13 @@ jobs:
           sudo chmod +x /usr/local/bin/hakoniwa/hako-master
           sudo chmod +x /usr/local/bin/hakoniwa/hako-cleanup
           cd ../
-          tar -cvzf hakoniwa-conductor_${{ env.OS_NAME }}_${{ env.OS_ARCH }}.tar.gz /usr/local/bin/hakoniwa /usr/local/lib/hakoniwa /var/lib/hakoniwa /etc/hakoniwa
-          echo "ARTIFACT_HAKONIWA-CONDUCTOR=hakoniwa-conductor_${{ env.OS_NAME }}_${{ env.OS_ARCH }}.tar.gz" >> $GITHUB_ENV
+          tar -cvzf hakoniwa-conductor_${{ env.OS_NAME }}_${{ env.OS_ARCH }}_${{ matrix.os }}.tar.gz /usr/local/bin/hakoniwa /usr/local/lib/hakoniwa /var/lib/hakoniwa /etc/hakoniwa
+          echo "ARTIFACT_HAKONIWA-CONDUCTOR=hakoniwa-conductor_${{ env.OS_NAME }}_${{ env.OS_ARCH }}_${{ matrix.os }}.tar.gz" >> $GITHUB_ENV
 
       - name: upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: hakoniwa-conductor_${{ env.OS_NAME }}_${{ env.OS_ARCH }}
+          name: hakoniwa-conductor_${{ env.OS_NAME }}_${{ env.OS_ARCH }}_${{ matrix.os }}
           path: |
             ${{ env.ARTIFACT_HAKONIWA-CONDUCTOR }}
           retention-days: 5
