@@ -1,16 +1,16 @@
 #!/bin/bash
 
 export PATH=${PATH}:/usr/local/bin/hakoniwa
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib/hakoniwa
+if [ `uname` = "Darwin" ]
+then
+    export DYLD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib/hakoniwa
+else
+    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib/hakoniwa
+fi
 export PYTHONPATH="/usr/local/lib/hakoniwa:$PYTHONPATH"
 export PYTHONPATH="/usr/local/lib/hakoniwa/py:$PYTHONPATH"
-CLIENT_PATH=../../main/target/debug/
+CLIENT_PATH=../hakoniwa-conductor/main/target/debug
 
-CLIENT_CUSTOM_JSON_PATH=spec/custom.json
-if [ $# -eq 1 ]
-then
-    CLIENT_CUSTOM_JSON_PATH=$1
-fi
 
 #PIQ_MOSQUITO=
 PID_CONDUCTOR=
@@ -62,13 +62,13 @@ trap handle_signal SIGINT SIGTERM
 echo "ACTIVATING CONDUCTOR(CLIENT)"
 ${CLIENT_PATH}/hakoniwa-conductor-client \
     client/conductor_config.json \
-    ${CLIENT_CUSTOM_JSON_PATH} &
+    spec/custom.json &
 PID_CONDUCTOR=$!
 
 sleep 1
 
 echo "ACTIVATING PYTHON PROG"
-python3 client/asset-client-tester.py ${CLIENT_CUSTOM_JSON_PATH} &
+python3 client/asset-client-tester.py spec/asset-pdudef.json &
 PID_PYTHON=$!
 
 sleep 1

@@ -13,44 +13,14 @@
 
 なお、箱庭コンダクタは、箱庭シミュレーション環境に同梱されるモジュールであるため、本リポジトリ単体で箱庭シミュレーションを実施することはできません。
 
-# 箱庭コンダクタの動作確認手順
+## 箱庭コンダクタをホストPCに直接インストールする手順
 
-本リポジトリでは、箱庭コンダクタの動作確認用のテスト環境を用意しています。
+箱庭コンダクタをインストールするには、以下の手順で実施ます。
 
-## テスト環境
+1. C++版箱庭コア機能をインストール
+2. 箱庭コンダクタをインストール
 
-箱庭コンダクタの動作確認環境は以下の通りです。
-
-* OS: Windows 10/11 WSL2 && Docker
-* Python3
-
-## テスト構成
-
-* クライアント側の箱庭アセット
-  * hakoniwa-conductor/test/workspace/client/asset-client-tester.py
-* サーバー側の箱庭アセット
-  * hakoniwa-conductor/test/workspace/server/asset-srv-tester.py 
-
-## 通信構成
-
-![image](https://github.com/toppers/hakoniwa-conductor/assets/164193/1a8d3b77-5738-4dae-a0f9-ae290e99e352)
-
-
-* UDP 通信
-  * hakoniwa-conductor/test/workspace/spec/custom.json
-* MQTT 通信
-  * hakoniwa-conductor/test/workspace/spec/custom_mqtt.json
-* 箱庭コンダクタのクライアントのコンフィグ
-  * hakoniwa-conductor/test/workspace/client/conductor_config.json
-    * IPアドレスは、WSL2上の eth0 のIPアドレスを設定してください。
-    * MQTTのテストをする場合は、mqtt_portnoの値を `1883` にしてください。
-
-## インストール手順
-
-ここでは、project というディレクトリが /mnt/c 直下に存在することを前提とします（ご自身の環境に応じて読み替えてください）。
-
-
-## C++版箱庭コア機能側
+## C++版箱庭コア機能をインストール
 
 C++版箱庭コア機能をインストールします。
 
@@ -62,8 +32,10 @@ bash build.bash
 bash install.bash
 ```
 
-## 箱庭コンダクタ側
+## 箱庭コンダクタをインストール
 
+事前に、rust のインストールが必要です。
+rust のインストール方法は、[Rustのインストール](https://www.rust-lang.org/ja/tools/install)を参照してください。
 
 箱庭コンダクタをビルドします。
 
@@ -72,18 +44,173 @@ cd project
 git clone --recursive https://github.com/toppers/hakoniwa-conductor.git
 cd hakoniwa-conductor/main
 bash build.bash
+bash install.bash
 ```
 
-dockerイメージを作成します。
+# 箱庭コンダクタの仕様
+
+## 箱庭コンダクタのポート構成
+
+### 箱庭コンダクタのサーバー側
+
+* gRPC ポート番号: `50051` (デフォルト)
+  * 引数 <ipaddr>:<port> の <port> に設定
+* UDP 受信ポート番号: `54001` (デフォルト)
+  * 引数 <udp_server_port> の値に設定
+* UDP 送信ポート番号(自分側): `54002` (デフォルト)
+  * 引数 <udp_sender_port> の値に設定
+
+### 箱庭コンダクタのクライアント側
+
+* UDP 受信ポート番号: `51001` (デフォルト)
+  * conductor_config.json の <udp_server_port> に設定
+* UDP 送信ポート番号(自分側): `51002` (デフォルト)
+  * conductor_config.json の <udp_sender_port> に設定
+
+## 箱庭コンダクタのコマンド仕様
+
+### 箱庭コンダクタのサーバー側
+
+TODO(工事中)
+
+### 箱庭コンダクタのクライアント側
+
+TODO(工事中)
+
+
+# 箱庭コンダクタの動作確認手順
+
+本リポジトリでは、箱庭コンダクタの動作確認用のテスト環境を用意しています。
+
+## テスト環境
+
+箱庭コンダクタの動作確認環境は以下の通りです。
+
+* OS: 
+  * Windows 10/11 WSL2 && Docker Compose
+  * MacOS && Docker Compose
+
+## テスト構成
+
+* クライアント側の箱庭アセット
+  * hakoniwa-conductor/test/workspace/client/asset-client-tester.py
+* サーバー側の箱庭アセット
+  * hakoniwa-conductor/test/workspace/server/asset-srv-tester.py 
+
+## docker 環境
+
+本テストでは、手軽にテストできるように、docker 環境を用意しています。
+
+docker 環境は、docker-compose を使って、箱庭コンダクタのサーバーとクライアントを起動します。
+
+### docker compose 環境の作成方法
+
+docker-compose でビルドします。
 
 ```
-cd ../test
-bash docker/create-image.bash 
+cd hakoniwa-conductor/test
 ```
 
-最後に、`hakoniwa-conductor/test/workspace/client/conductor_config.json`のIPアドレスを、WSL2上の eth0 のIPアドレスを設定してください。
+```
+docker-compose build
+```
 
-## 動作確認手順
+
+### docker compose 環境の起動方法
+
+docker-compose で箱庭コンダクタのサーバーとクライアントを起動します。
+
+```
+cd hakoniwa-conductor/test
+```
+
+```
+docker-compose up -d
+```
+
+成功すると、こうなります。
+
+```
+[+] Running 2/0
+ ✔ Container hakoniwa-server  Running                                            0.0s 
+ ✔ Container hakoniwa-client  Running                                            0.0s
+ ```
+
+### docker コンテナへの接続方法
+
+docker-compose で起動した箱庭コンダクタのサーバーとクライアントに接続します。
+
+```
+cd hakoniwa-conductor/test
+```
+
+サーバーに接続する場合：
+
+```
+docker exec -it hakoniwa-server /bin/bash
+```
+
+クライアントに接続する場合：
+
+```
+docker exec -it hakoniwa-client /bin/bash
+```
+
+### docker コンテナの再起動方法
+
+docker-compose で起動した箱庭コンダクタのサーバーとクライアントを再起動します。
+
+```
+cd hakoniwa-conductor/test
+```
+
+```
+docker-compose restart
+```
+
+### docker コンテナの停止方法
+
+docker-compose で起動した箱庭コンダクタのサーバーとクライアントを停止します。
+
+```
+cd hakoniwa-conductor/test
+```
+
+```
+docker-compose down
+```
+
+## 通信構成
+
+TODO(工事中)
+
+* UDP 通信
+  * hakoniwa-conductor/test/workspace/spec/custom.json
+* MQTT 通信
+  * hakoniwa-conductor/test/workspace/spec/custom_mqtt.json
+* 箱庭コンダクタのクライアントのコンフィグ
+  * hakoniwa-conductor/test/workspace/client/conductor_config.json
+    * IPアドレスは、WSL2上の eth0 のIPアドレスを設定してください。
+    * MQTTのテストをする場合は、mqtt_portnoの値を `1883` にしてください。
+
+## テストアプリケーションの説明
+
+本テストでは、サーバー側のノードに箱庭アセット `asset-srv-tester.py` を配置し、クライアント側のノードに箱庭アセット `asset-client-tester.py` を配置します。
+
+- [asset-srv-tester.py](./test/workspace/server/asset-srv-tester.py)
+  - サーバー側の箱庭アセット
+  - クライアント側のノードの箱庭アセットが読み込むPDUデータへデータを書き込みします。
+  - PDUデータは、`std_msgs/String` 型のデータを送信します。
+  - また、クライアント側のノードの箱庭アセットが書き込みしたPDUデータを読み込みします。
+  - 読み込んだデータは、デバッグ用にログ出力されます。
+- [asset-client-tester.py](./test/workspace/client/asset-client-tester.py)
+  - クライアント側の箱庭アセット
+  - サーバー側のノードの箱庭アセットが読み込むPDUデータからデータを読み込みます。
+  - PDUデータは、`std_msgs/String` 型のデータを受信します。
+  - また、サーバー側のノードの箱庭アセットが書き込みしたPDUデータへデータを読み込みします。
+  - 読み込んだデータは、デバッグ用にログ出力されます。
+
+## テスト実行方法
 
 端末を３個用意します。
 
@@ -91,55 +218,69 @@ bash docker/create-image.bash
 * 端末B：箱庭コンダクタのクライアント側
 * 端末C：箱庭コンダクタのサーバー側（コマンド実行用）
 
-端末A：箱庭コンダクタのサーバーとサーバー側のアセットを起動します。
+### 端末A： docker compose を起動します。
 
 ```
-cd test
-bash docker/run.bash
+cd hakoniwa-conductor/test
 ```
 
-成功するとこうなります。
-
 ```
-OPEN RECIEVER UDP PORT=172.25.195.216:54001
-OPEN SENDER UDP PORT=172.25.195.216:54002
+docker-compose up -d
+```
+
+### 端末A, B, C： docker コンテナに接続します。
+
+端末A:
+```
+cd hakoniwa-conductor/test
+```
+```
+docker exec -it hakoniwa-server /bin/bash
+```
+
+実行例：
+```
+root@f9b5698b3fdc:~/workspace# bash server/run.bash
+OPEN RECIEVER UDP PORT=172.20.0.10:54001
+OPEN SENDER UDP PORT=172.20.0.10:54002
 delta_msec = 20
-max_delay_msec = 100
-INFO: shmget() key=255 size=80768
-Server Start: 172.25.195.216:50051
+max_delay_msec = 20
+Server Start: 172.20.0.10:50051
 INFO: ACTIVATING :server/asset-srv-tester.py
-START TEST
-LOADED: TB3RoboModel
+Robot: TB3RoboModel, PduWriter: TB3RoboModel_ch2
+channel_id: 2 pdu_size: 256
 INFO: TB3RoboModel create_lchannel: logical_id=2 real_id=0 size=256
-subscribe:channel_id=1
-subscribe:typename=String
-subscribe:pdu_size=256
-WAIT START:
+Robot: TB3RoboModel, PduWriter: TB3RoboModel_ch1
+channel_id: 1 pdu_size: 256
+INFO: TB3RoboModel create_lchannel: logical_id=1 real_id=1 size=256
+INFO: asset(Server) is registered.
+WAIT START
 ```
 
-端末B：箱庭コンダクタのクライアントとクライアント側のアセットを起動します。
 
+端末B:
 ```
-cd test/workspace
-bash client/activate-client.bash  spec/custom_mqtt.json
+cd hakoniwa-conductor/test
+```
+```
+docker exec -it hakoniwa-client /bin/bash
 ```
 
-成功するとこうなります。
-
+実行例：
 ```
+root@699e6354f7c0:~/workspace# bash client/run.bash 
 ACTIVATING CONDUCTOR(CLIENT)
 Conductor asset_name: ConductorClient-01
-Conductor core_ipaddr: 172.25.195.216
+Conductor core_ipaddr: 172.20.0.10
 Conductor core_portno: 50051
 Conductor delta_msec: 20
-Conductor max_delay_msec: 100
-Conductor udp_server_port: 172.25.195.216:51001
-Conductor udp_sender_port: 172.25.195.216:51002
+Conductor max_delay_msec: 20
+Conductor udp_server_port: 172.20.0.11:51001
+Conductor udp_sender_port: 172.20.0.11:51002
 Conductor mqtt_portno: -1
 Conductor mqtt_pub_client_id: hako-mqtt-publisher-client-01
 Conductor mqtt_sub_client_id: hako-mqtt-subscriber-client-01
 -------------------
-INFO: shmget() key=255 size=80768
 INFO: asset_register_polling() success
 Register response: NormalReply { ercd: Ok }
 Robot Name: TB3RoboModel
@@ -159,26 +300,40 @@ create_asset_pub_pdu: robo_name=TB3RoboModel channel_id=2 real_id=0
 create_asset_pub_pdu: channel_ID=2
 CreatePduChannel response: CreatePduChannelReply { ercd: Ok, port: 54001 }
 create_asset_sub_pdu
-OPEN SENDER UDP PORT=172.25.195.216:51002
-OPEN RECIEVER UDP PORT=172.25.195.216:51001
+OPEN SENDER UDP PORT=172.20.0.11:51002
+OPEN RECIEVER UDP PORT=172.20.0.11:51001
 ACTIVATING PYTHON PROG
-START TEST
-LOADED: TB3RoboModel
+Robot: TB3RoboModel, PduWriter: TB3RoboModel_ch2
+channel_id: 2 pdu_size: 256
+Robot: TB3RoboModel, PduWriter: TB3RoboModel_ch1
+channel_id: 1 pdu_size: 256
 INFO: TB3RoboModel create_lchannel: logical_id=1 real_id=1 size=256
-subscribe:channel_id=2
-subscribe:typename=String
-subscribe:pdu_size=256
-WAIT START:
+INFO: asset(Client) is registered.
+WAIT START
 ```
 
-端末C：シミュレーション開始します。
+端末C:
+```
+cd hakoniwa-conductor/test
+```
+```
+docker exec -it hakoniwa-server /bin/bash
+```
+
+### 端末A：箱庭コンダクタのサーバーを起動します。
 
 ```
-cd test
-bash docker/attach.bash
+bash server/run.bash
 ```
 
-docker コンテナ起動後、以下のコマンドでシミュレーション開始します。
+### 端末B：箱庭コンダクタのクライアントを起動します。
+
+```
+bash client/run.bash
+```
+
+
+### 端末C：シミュレーション開始します。
 
 ```
 hako-cmd start
@@ -188,59 +343,50 @@ hako-cmd start
 
 端末A：
 ```
+WAIT START
 register: Got a request: Request { metadata: MetadataMap { headers: {"te": "trailers", "content-type": "application/grpc", "user-agent": "tonic/0.8.3"} }, message: AssetInfo { name: "ConductorClient-01" }, extensions: Extensions }
-subscribe_pdu_channel: Got a request: Request { metadata: MetadataMap { headers: {"te": "trailers", "content-type": "application/grpc", "user-agent": "tonic/0.8.3"} }, message: SubscribePduChannelRequest { asset_name: "ConductorClient-01", channel_id: 2, pdu_size: 256, listen_udp_ip_port: "172.25.195.216:51001", method_type: "UDP", robo_name: "TB3RoboModel" }, extensions: Extensions }
+subscribe_pdu_channel: Got a request: Request { metadata: MetadataMap { headers: {"te": "trailers", "content-type": "application/grpc", "user-agent": "tonic/0.8.3"} }, message: SubscribePduChannelRequest { asset_name: "ConductorClient-01", channel_id: 2, pdu_size: 256, listen_udp_ip_port: "172.20.0.11:51001", method_type: "UDP", robo_name: "TB3RoboModel" }, extensions: Extensions }
 create_asset_sub_pdu
 create_pdu_channel: Got a request: Request { metadata: MetadataMap { headers: {"te": "trailers", "content-type": "application/grpc", "user-agent": "tonic/0.8.3"} }, message: CreatePduChannelRequest { asset_name: "ConductorClient-01", channel_id: 1, pdu_size: 256, method_type: "UDP", robo_name: "TB3RoboModel" }, extensions: Extensions }
-INFO: TB3RoboModel create_lchannel: logical_id=1 real_id=1 size=256
 create_asset_pub_pdu: robo_name=TB3RoboModel channel_id=1 real_id=1
 create_asset_pub_pdu: channel_ID=1
 asset_notification_start: Got a request: Request { metadata: MetadataMap { headers: {"te": "trailers", "content-type": "application/grpc", "user-agent": "tonic/0.8.3"} }, message: AssetInfo { name: "ConductorClient-01" }, extensions: Extensions }
-WAIT RUNNING:
+WAIT RUNNING
 ## SimulationAssetEvent START
 asset_notification_feedback: Got a request: Request { metadata: MetadataMap { headers: {"te": "trailers", "content-type": "application/grpc", "user-agent": "tonic/0.8.3"} }, message: AssetNotificationReply { event: Start, asset: Some(AssetInfo { name: "ConductorClient-01" }), ercd: Ok }, extensions: Extensions }
 START CREATE PDU DATA: total_size= 512
-INFO: shmget() key=256 size=512
+PDU CREATED
 PDU DATA CREATED
-CREATED ADDR=0x7fe9a4dcd00c
-WAIT PDU CREATED:
+CREATED ADDR=0x405539a00c
 LOADED: PDU DATA
-sync_mode: true
-simulation mode: false
-SLEEP START: 1000msec
-GO:
-world_time=1020000 YOUR DATA: ch1_data:HELLO_CLIENT_0
-world_time=2020000 YOUR DATA: ch1_data:HELLO_CLIENT_0
-world_time=3020000 YOUR DATA: ch1_data:HELLO_CLIENT_1
-world_time=4020000 YOUR DATA: ch1_data:HELLO_CLIENT_2
-world_time=5020000 YOUR DATA: ch1_data:HELLO_CLIENT_3
-world_time=6020000 YOUR DATA: ch1_data:HELLO_CLIENT_4
-world_time=7020000 YOUR DATA: ch1_data:HELLO_CLIENT_5
+INFO: start simulation
+INFO: on_manual_timing_control enter
+20000: pdu_ch1_data={'data': 'CLIENT DATA:  0'}
+60000: pdu_ch1_data={'data': 'CLIENT DATA:  1'}
+100000: pdu_ch1_data={'data': 'CLIENT DATA:  2'}
+140000: pdu_ch1_data={'data': 'CLIENT DATA:  3'}
 ```
 
 端末B：
 ```
-server_event_handling:Start
+WAIT START
+^[[1;2Dserver_event_handling:Start
 wait_asset_callback_done(): prev_state=Runnable next_state=Running
-WAIT RUNNING:
+WAIT RUNNING
 START CREATE PDU DATA: total_size= 512
-INFO: shmget() key=256 size=512
-WAIT PDU CREATED:
+PDU CREATED
 PDU DATA CREATED
-CREATED ADDR=0x7f6d5d20f00c
+CREATED ADDR=0x404c8c900c
 asset_notification_feedback:request=AssetNotificationReply { event: Start, asset: Some(AssetInfo { name: "ConductorClient-01" }), ercd: Ok }
-asset_notification_feedback:response=Response { metadata: MetadataMap { headers: {"content-type": "application/grpc", "date": "Fri, 14 Jul 2023 05:50:02 GMT", "grpc-status": "0"} }, message: NormalReply { ercd: Ok }, extensions: Extensions }
-asset_notify_write_pdu_done() asset_name="ConductorClient-01"
 LOADED: PDU DATA
-OK PDU CREATED:
-DO EXECUTE():
-sync_mode: true
-SLEEP START: 1000msec
-GO:
-world_time=1020000  YOUR DATA: ch2_data:HELLO_SERVER_0
-world_time=2020000  YOUR DATA: ch2_data:HELLO_SERVER_1
-world_time=3020000  YOUR DATA: ch2_data:HELLO_SERVER_2
-world_time=4020000  YOUR DATA: ch2_data:HELLO_SERVER_3
-world_time=5020000  YOUR DATA: ch2_data:HELLO_SERVER_4
-world_time=6020000  YOUR DATA: ch2_data:HELLO_SERVER_5
+INFO: start simulation
+INFO: on_manual_timing_control enter
+asset_notification_feedback:response=Response { metadata: MetadataMap { headers: {"content-type": "application/grpc", "date": "Wed, 25 Jun 2025 23:20:03 GMT", "grpc-status": "0"} }, message: NormalReply { ercd: Ok }, extensions: Extensions }
+asset_notify_write_pdu_done() asset_name="ConductorClient-01" 
+INFO: conductor execute():status.is_pdu_created is false: false
+20000: pdu_ch2_data={'data': ''}
+60000: pdu_ch2_data={'data': 'SERVER DATA: 0'}
+100000: pdu_ch2_data={'data': 'SERVER DATA: 1'}
+140000: pdu_ch2_data={'data': 'SERVER DATA: 2'}
+180000: pdu_ch2_data={'data': 'SERVER DATA: 3'}
 ```

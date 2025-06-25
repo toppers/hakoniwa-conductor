@@ -1,11 +1,11 @@
 {
 	"asset_name": "ConductorClient-01",
-	"core_ipaddr": "172.25.195.216",
+	"core_ipaddr": "172.20.0.10",
 	"core_portno": 50051,
 	"delta_msec": 20,
-	"max_delay_msec": 100,
-	"udp_server_ip_port": "172.25.195.216:51001",
-	"udp_sender_ip_port": "172.25.195.216:51002",
+	"max_delay_msec": 20,
+	"udp_server_ip_port": "172.20.0.11:51001",
+	"udp_sender_ip_port": "172.20.0.11:51002",
 	"mqtt_portno": -1,
 	"mqtt_pub_client_id": "hako-mqtt-publisher-client-01",
 	"mqtt_sub_client_id": "hako-mqtt-subscriber-client-01"

@@ -1,0 +1,51 @@
+version: "3.8"
+
+networks:
+  hakoniwa_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+
+services:
+  server:
+    build:
+      context: ./docker/server
+    platform: linux/amd64
+    container_name: hakoniwa-server
+    networks:
+      hakoniwa_net:
+        ipv4_address: 172.20.0.10
+    ports:
+      - "50051:50051"
+      - "54001:54001/udp"
+      - "54002:54002/udp"
+    volumes:
+      - ./workspace/server:/root/workspace/server
+      - ./workspace/spec:/root/workspace/spec
+      - ./workspace:/root/workspace
+    environment:
+      CORE_IPADDR: 172.20.0.11  # client のIP
+      GRPC_PORT: 50051
+      UDP_SRV_PORT: 54001
+      UDP_SND_PORT: 54002
+    command: ["sleep", "infinity"]
+    restart: unless-stopped
+
+  client:
+    build:
+      context: ./docker/client
+    platform: linux/amd64
+    container_name: hakoniwa-client
+    networks:
+      hakoniwa_net:
+        ipv4_address: 172.20.0.11
+    volumes:
+      - ./workspace/client:/root/workspace/client
+      - ./workspace/spec:/root/workspace/spec
+      - ./workspace:/root/workspace
+    environment:
+      SERVER_IPADDR: 172.20.0.10
+    command: ["sleep", "infinity"]
+    restart: unless-stopped

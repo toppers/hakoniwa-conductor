@@ -1,8 +1,15 @@
 #!/bin/bash
 
+export DELTA_MSEC=20
+export MAX_DELAY_MSEC=20
+export GRPC_PORT=50051
+export UDP_SRV_PORT=54001
+export UDP_SND_PORT=54002
+export CORE_IPADDR="172.20.0.10"
+
 if [ -z ${CLIENT_CUSTOM_JSON_PATH} ]
 then
-    CLIENT_CUSTOM_JSON_PATH=spec/custom.json
+    CLIENT_CUSTOM_JSON_PATH=spec/asset-pdudef.json
 fi
 MQTT_PORT=
 grep MQTT $CLIENT_CUSTOM_JSON_PATH > /dev/null

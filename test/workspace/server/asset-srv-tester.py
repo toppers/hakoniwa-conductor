@@ -1,88 +1,79 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
+import hakopy
+import hako_pdu
 import sys
-from hako_binary import offset_map
-from hako_binary import binary_writer
-from hako_binary import binary_reader
-import hako_env
-import hako
-import signal
-import hako_robomodel_any
 import time
 
-if len(sys.argv) != 2:
-  print("Usage: <client-json-path>")
-  sys.exit(1)
-client_json_path=sys.argv[1]
+def my_on_initialize(context):
+    return 0
 
-def handler(signum, frame):
-  print(f'SIGNAL(signum={signum})')
-  sys.exit(0)
+def my_on_reset(context):
+    return 0
 
-def sync_pdu(robo):
-  for channel_id in robo.actions:
-    robo.hako.write_pdu(channel_id, robo.actions[channel_id])
+pdu_manager = None
+def my_on_manual_timing_control(context):
+    global pdu_manager
+    print("INFO: on_manual_timing_control enter")
+    pdu_ch1 = pdu_manager.get_pdu('TB3RoboModel', 1)
+    pdu_ch2 = pdu_manager.get_pdu('TB3RoboModel', 2)
+    pdu_ch2_data = pdu_ch2.get()
+    result = True
+    count = 0
+    while result:
+        pdu_ch2_data['data'] = "SERVER DATA: " + str(count)
+        
+        ret = pdu_ch2.write()
+        if ret == False:
+            print('"ERROR: hako_asset_pdu_write')
+            break
+        result = hakopy.usleep(1000)
+        if result == False:
+            break
 
-print("START TEST")
+        pdu_ch1_data = pdu_ch1.read()
+        if pdu_ch1_data == None:
+            print('ERROR: hako_asset_pdu_read')
+        print(f'{hakopy.simulation_time()}: pdu_ch1_data={pdu_ch1_data}')
 
-# signal.SIGALRMのシグナルハンドラを登録
-signal.signal(signal.SIGINT, handler)
+        result = hakopy.usleep(1000)
+        if result == False:
+            break
+        count = count + 1
+        #time.sleep(1)  # 1秒スリープ
+    print("INFO: on_manual_timing_control exit")
+    return 0
 
-#do simulation
-def delta_usec():
-  return 20000
+my_callback = {
+    'on_initialize': my_on_initialize,
+    'on_simulation_step': None,
+    'on_manual_timing_control': my_on_manual_timing_control,
+    'on_reset': my_on_reset
+}
+def main():
+    global pdu_manager
+    if len(sys.argv) != 2:
+        print(f"Usage: {sys.argv[0]} <config_path>")
+        return 1
 
-#create hakoniwa env
-env = hako_env.make("TB3RoboModel", "any", client_json_path)
+    asset_name = 'Server'
+    config_path = sys.argv[1]
+    delta_time_usec = 20000
 
-while True:
-  print("WAIT START:")
-  env.hako.wait_event(hako.HakoEvent['START'])
-  print("WAIT RUNNING:")
-  env.hako.wait_state(hako.HakoState['RUNNING'])
-  print("WAIT PDU CREATED:")
-  env.hako.wait_pdu_created()
+    pdu_manager = hako_pdu.HakoPduManager('/usr/local/lib/hakoniwa/hako_binary/offset', config_path)
 
-  robo = env.robo()
-  robo.delta_usec = delta_usec
+    #hakopy.conductor_start(delta_time_usec, delta_time_usec)
+    ret = hakopy.asset_register(asset_name, config_path, my_callback, delta_time_usec, hakopy.HAKO_ASSET_MODEL_PLANT)
+    if ret == False:
+        print(f"ERROR: hako_asset_register() returns {ret}.")
+        return 1
 
-  # WRITE PDU DATA for initial value
-  count = 0
-  ch1_data = robo.get_action('ch2')
-  ch1_data['data'] = "HELLO_SERVER_" + str(count)
-  sync_pdu(robo)
-  env.hako.execute()
+    ret = hakopy.start()
+    print(f"INFO: hako_asset_start() returns {ret}")
 
-  print("SLEEP START: 1000msec")
-  env.hako.usleep(1000 * 1000) #1000msec
-  print("GO:")
+    #hakopy.conductor_stop()
+    return 0
 
-  while True:
-    if env.hako.execute_step() == False:
-      if env.hako.state() != hako.HakoState['RUNNING']:
-        print("WAIT_STOP")
-        env.hako.wait_event(hako.HakoEvent['STOP'])
-        print("WAIT_RESET")
-        env.hako.wait_event(hako.HakoEvent['RESET'])
-        print("DONE")
-        break
-      else:
-        time.sleep(0.01)
-        continue
-    sensors = env.hako.read_pdus()
-
-    # READ PDU DATA
-    ch1_data = robo.get_state("ch1", sensors)
-    curr_time = robo.hako.get_worldtime()
-    print(f"world_time={curr_time} YOUR DATA: ch1_data:{ch1_data['data']}")
-
-    # WRITE PDU DATA
-    ch2_data = robo.get_action('ch2')
-    ch2_data['data'] = "HELLO_SERVER_" + str(count)
-    sync_pdu(robo)
-    count = count + 1
-
-    env.hako.usleep(1000 * 1000) #1000msec
-
-
-
+if __name__ == "__main__":
+    sys.exit(main())
