@@ -11,9 +11,9 @@ if [ -z ${CLIENT_CUSTOM_JSON_PATH} ]
 then
     CLIENT_CUSTOM_JSON_PATH=spec/asset-pdudef.json
 fi
+
 MQTT_PORT=
-grep MQTT $CLIENT_CUSTOM_JSON_PATH > /dev/null
-if [ $? -eq 0 ]
+if [ $# -eq 1 ]
 then
     which mosquitto > /dev/null
     if [ $? -ne 0 ]

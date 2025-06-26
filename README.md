@@ -342,7 +342,37 @@ cd hakoniwa-conductor/test
 docker exec -it hakoniwa-server /bin/bash
 ```
 
-実行例：
+
+端末B:
+```
+cd hakoniwa-conductor/test
+```
+```
+docker exec -it hakoniwa-client /bin/bash
+```
+
+
+端末C:
+```
+cd hakoniwa-conductor/test
+```
+```
+docker exec -it hakoniwa-server /bin/bash
+```
+
+### 端末A：箱庭コンダクタのサーバーを起動します。
+
+UDPの場合：
+```
+bash server/run.bash
+```
+
+MQTTの場合：
+```
+bash server/run.bash mqtt
+```
+
+実行例(UDPの場合)：
 ```
 root@f9b5698b3fdc:~/workspace# bash server/run.bash
 OPEN RECIEVER UDP PORT=172.20.0.10:54001
@@ -361,16 +391,19 @@ INFO: asset(Server) is registered.
 WAIT START
 ```
 
+### 端末B：箱庭コンダクタのクライアントを起動します。
 
-端末B:
+UDPの場合：
 ```
-cd hakoniwa-conductor/test
-```
-```
-docker exec -it hakoniwa-client /bin/bash
+bash client/run.bash
 ```
 
-実行例：
+MQTTの場合：
+```
+bash client/run.bash mqtt
+```
+
+実行例(UDPの場合)：
 ```
 root@699e6354f7c0:~/workspace# bash client/run.bash 
 ACTIVATING CONDUCTOR(CLIENT)
@@ -415,27 +448,6 @@ INFO: TB3RoboModel create_lchannel: logical_id=1 real_id=1 size=256
 INFO: asset(Client) is registered.
 WAIT START
 ```
-
-端末C:
-```
-cd hakoniwa-conductor/test
-```
-```
-docker exec -it hakoniwa-server /bin/bash
-```
-
-### 端末A：箱庭コンダクタのサーバーを起動します。
-
-```
-bash server/run.bash
-```
-
-### 端末B：箱庭コンダクタのクライアントを起動します。
-
-```
-bash client/run.bash
-```
-
 
 ### 端末C：シミュレーション開始します。
 
