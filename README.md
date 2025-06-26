@@ -285,7 +285,7 @@ docker-compose down
 
 ## 通信構成
 
-![images](https://github.com/user-attachments/assets/efc7af25-61d1-4d58-9866-43e7cf445283)
+![スクリーンショット 2025-06-26 10 33 48](https://github.com/user-attachments/assets/c7b65f2d-9d6c-4f51-8433-ff9bf7f04f4e)
 
 
 * UDP 通信
