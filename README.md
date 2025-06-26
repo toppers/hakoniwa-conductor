@@ -71,11 +71,114 @@ bash install.bash
 
 ### 箱庭コンダクタのサーバー側
 
-TODO(工事中)
+サーバーを起動するには、以下の形式でコマンドを実行します：
+
+```bash
+hako-master-rust <delta_msec> <max_delay_msec> <ipaddr>:<port> [<udp_server_port> <udp_sender_port> [<mqtt_portno>]]
+```
+
+---
+
+### 引数の説明
+
+| 引数                  | 説明                                                 |
+| ------------------- | -------------------------------------------------- |
+| `<delta_msec>`      | シミュレーションの1ステップあたりの時間幅（ミリ秒単位）。タイミング制御周期を表します。例：`20` |
+| `<max_delay_msec>`  | 最大許容遅延時間（ミリ秒単位）。PDU配信の最大許容遅延として使用されます。例：`100`      |
+| `<ipaddr>:<port>`   | gRPCの待受アドレスとポート番号。例：`127.0.0.1:50051`              |
+| `<udp_server_port>` | UDP受信用ポート番号（任意）。UDP通信を行う場合に指定します。例：`54001`         |
+| `<udp_sender_port>` | UDP送信用ポート番号（任意）。UDP通信を行う場合に指定します。例：`54002`         |
+| `<mqtt_portno>`     | MQTTブローカーのポート番号（任意）。MQTT通信を行う場合に指定します。例：`1883`     |
+
+---
+
+### 実行例
+
+#### PDU通信でUDPを使用する場合：
+
+```bash
+hako-master-rust 20 100 172.20.0.10:50051 54001 54002
+```
+
+#### PDU通信でMQTTも使用する場合(UDP指定は必須です)：
+
+```bash
+hako-master-rust 20 100 172.20.0.10:50051 54001 54002 1883
+```
+
+#### 最小構成（gRPCのみ）：
+
+```bash
+hako-master-rust 20 100 172.20.0.10:50051
+```
 
 ### 箱庭コンダクタのクライアント側
 
-TODO(工事中)
+クライアントは、**JSON形式の設定ファイル**を用いて箱庭コンダクタサーバーと接続・通信します。クライアントは、以下のように起動します。
+
+### 起動コマンド
+
+```bash
+hako-conductor-client <conductor-config> <robot-config>
+```
+
+* `<conductor-config>` : クライアント用の設定ファイル（JSON形式）
+* `<robot-config>` : 操作対象ロボットの設定ファイル（JSON形式）
+
+---
+
+### クライアント設定ファイル (`conductor_config.json`)
+
+以下のような形式で記述します：
+
+```json
+{
+  "asset_name": "ConductorClient-01",
+  "core_ipaddr": "172.20.0.10",
+  "core_portno": 50051,
+  "delta_msec": 20,
+  "max_delay_msec": 20,
+  "udp_server_ip_port": "172.20.0.11:51001",
+  "udp_sender_ip_port": "172.20.0.11:51002",
+  "mqtt_portno": -1,
+  "mqtt_pub_client_id": "hako-mqtt-publisher-client-01",
+  "mqtt_sub_client_id": "hako-mqtt-subscriber-client-01"
+}
+```
+
+### 各項目の説明
+
+| フィールド名               | 説明                                           |
+| -------------------- | -------------------------------------------- |
+| `asset_name`         | クライアントの識別名。サーバーへの登録名として使われます。                |
+| `core_ipaddr`        | 箱庭コンダクタサーバーのIPアドレス。                          |
+| `core_portno`        | サーバーのgRPCポート番号（通常 `50051`）。                  |
+| `delta_msec`         | シミュレーションのステップ間隔（ミリ秒単位）。                      |
+| `max_delay_msec`     | 最大許容遅延時間（ミリ秒単位）。                             |
+| `udp_server_ip_port` | UDP受信用のIPアドレス＋ポート番号（例: `172.20.0.11:51001`）。 |
+| `udp_sender_ip_port` | UDP送信用のIPアドレス＋ポート番号（例: `172.20.0.11:51002`）。 |
+| `mqtt_portno`        | MQTTブローカーのポート番号。使用しない場合は `-1` を指定。           |
+| `mqtt_pub_client_id` | MQTTパブリッシュ時のクライアントID（任意、重複不可）。               |
+| `mqtt_sub_client_id` | MQTTサブスクライブ時のクライアントID（任意、重複不可）。              |
+
+---
+
+### 実行例
+
+```bash
+hako-conductor-client conductor_config.json robot_config.json
+```
+
+---
+
+### 備考
+
+* UDPとMQTTの両方の通信方式をサポートしています。
+
+  * UDPのみ使用する場合は、`mqtt_portno: -1` とします。
+  * MQTTを有効にする場合は、正しいポート番号（通常は `1883`）とクライアントIDを設定してください。
+* `robot_config.json` には、使用する箱庭アセットのPDU定義や通信チャネルの情報が記述されます（内容はプロジェクトごとに異なります）。
+
 
 
 # 箱庭コンダクタの動作確認手順

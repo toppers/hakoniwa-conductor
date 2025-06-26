@@ -122,6 +122,7 @@ echo "Please build hakoniwa-conductor for rust"
 echo "BUILD: cargo build"
 cargo build
 cp ./target/debug/main ${HAKO_BIN_DIR}/hako-master-rust
+cp ./target/debug/hakoniwa-conductor-client ${HAKO_BIN_DIR}/hakoniwa-conductor-client
 cp hako-master ${HAKO_BIN_DIR}/hako-master
 cp hako-cleanup ${HAKO_BIN_DIR}/hako-cleanup
 chmod +x ${HAKO_BIN_DIR}/hako-master
