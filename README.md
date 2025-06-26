@@ -285,7 +285,8 @@ docker-compose down
 
 ## 通信構成
 
-TODO(工事中)
+![images](https://github.com/user-attachments/assets/efc7af25-61d1-4d58-9866-43e7cf445283)
+
 
 * UDP 通信
   * hakoniwa-conductor/test/workspace/spec/custom.json
